@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solicitud de cotización · Pilotaje y Excavación</title>
+  <meta name="description" content="Sistema de solicitud de cotizaciones para trabajos de pilotaje y excavación." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root{
+      --ink:#052a61;
+      --ink-2:#052a61;
+      --paper:#eef1f5;
+      --card:#ffffff;
+      --muted:#69727f;
+      --line:#dde2ea;
+      --line-strong:#c5ccd8;
+      --amber:#f5a623;
+      --amber-deep:#d98a00;
+      --amber-soft:#fff3da;
+      --steel:#2a313d;
+      --ok:#159a5e;
+      --err:#e04f37;
+      --radius:14px;
+      --radius-sm:10px;
+      --shadow:0 1px 2px rgba(20,22,27,.04), 0 8px 24px -12px rgba(20,22,27,.18);
+      --hazard:repeating-linear-gradient(45deg, var(--amber) 0 14px, var(--ink) 14px 28px);
+    }
+
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{
+      margin:0;
+      font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      color:var(--text, #1b2027);
+      background:var(--paper);
+      line-height:1.5;
+      -webkit-font-smoothing:antialiased;
+    }
+    .wrap{width:min(1160px, 100% - 2.5rem); margin-inline:auto}
+
+    h1,h2,legend,.eyebrow,.seg-btn,.spec-type,.spec-tag{
+      font-family:"Barlow Condensed",sans-serif;
+      letter-spacing:.01em;
+    }
+
+    .site-header{background:var(--ink); color:#fff; position:sticky; top:0; z-index:40}
+    .header-inner{display:flex; align-items:center; justify-content:space-between; height:72px; padding:0 1rem}
+    .brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit}
+    .brand-mark{
+      width:42px; height:42px; border-radius:10px; flex:0 0 auto;
+      background:var(--amber); color:var(--ink);
+      display:grid; place-items:center; font-size:22px;
+      box-shadow:inset 0 0 0 2px rgba(0,0,0,.12);
+    }
+    .brand-text{display:flex; flex-direction:column; line-height:1.1}
+    .brand-text strong{font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:24px; letter-spacing:.06em}
+    .brand-text small{color:var(--amber); font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:600}
+    .header-cta{
+      color:var(--ink); background:var(--amber); text-decoration:none;
+      font-weight:600; font-size:.9rem; padding:.55rem 1.1rem; border-radius:11px;
+      transition:transform .15s ease, filter .15s ease;
+    }
+    .header-cta:hover{filter:brightness(1.05); transform:translateY(-1px)}
+    .header-rule{height:6px; background:var(--hazard); opacity:.9}
+
+    .hero{padding:3.2rem 0 1.4rem}
+    .eyebrow{
+      font-weight:600; text-transform:uppercase; font-size:.86rem; letter-spacing:.18em;
+      color:var(--amber-deep); margin:0 0 .5rem;
+    }
+    .hero h1{font-size:clamp(2.4rem,6vw,3.9rem); font-weight:700; margin:0 0 .7rem; line-height:.98; color:var(--ink)}
+    .lead{max-width:60ch; color:var(--muted); margin:0; font-size:1.02rem}
+
+    .layout{
+      display:grid; grid-template-columns:1.55fr .95fr; gap:1.6rem;
+      padding:1.6rem 0 4rem; align-items:start;
+    }
+    .form-col{display:flex; flex-direction:column; gap:1.1rem; min-width:0}
+
+    .seg{
+      display:grid; grid-template-columns:1fr 1fr; gap:.4rem; padding:.4rem;
+      background:var(--ink); border-radius:var(--radius); position:sticky; top:86px; z-index:20;
+      box-shadow:var(--shadow);
+    }
+    .seg-btn{
+      display:flex; align-items:center; justify-content:center; gap:.5rem;
+      font-size:1.18rem; font-weight:600; color:#9aa3b0; cursor:pointer;
+      background:transparent; border:0; border-radius:10px; padding:.7rem;
+      transition:color .15s ease, background .15s ease;
+    }
+    .seg-btn .seg-k{font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--amber); opacity:.8}
+    .seg-btn:hover{color:#fff}
+    .seg-btn.is-active{background:var(--amber); color:var(--ink)}
+    .seg-btn.is-active .seg-k{color:var(--ink)}
+
+    .card{
+      background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:1.4rem; margin:0;
+    }
+    legend{
+      font-size:1.25rem; font-weight:600; padding:0; margin-bottom:1rem;
+      display:flex; align-items:center; gap:.6rem; color:var(--ink);
+    }
+    .legend-k{
+      display:grid; place-items:center; width:1.8rem; height:1.8rem; border-radius:8px;
+      background:var(--ink); color:var(--amber); font-family:"IBM Plex Mono",monospace;
+      font-size:.85rem; font-weight:600;
+    }
+    .opt,.hint{font-family:"Inter",sans-serif; font-weight:400; font-size:.78rem; color:var(--muted); letter-spacing:0}
+    .opt{text-transform:none}
+
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:1rem 1.1rem}
+    .span-2{grid-column:1 / -1}
+    .field{display:flex; flex-direction:column; gap:.38rem; min-width:0}
+    .field label{font-size:.84rem; font-weight:600; color:var(--ink)}
+    .field .hint{margin-left:.2rem}
+
+    input,select,textarea{
+      font:inherit; color:var(--text); width:100%;
+      background:var(--card); border:1px solid var(--line-strong); border-radius:var(--radius-sm);
+      padding:.66rem .8rem; transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    textarea{resize:vertical; min-height:72px}
+    input::placeholder,textarea::placeholder{color:var(--muted)}
+    input:focus,select:focus,textarea:focus{
+      outline:none; border-color:var(--amber-deep);
+      box-shadow:0 0 0 3px var(--amber-soft);
+    }
+    input[aria-invalid="true"],select[aria-invalid="true"]{
+      border-color:var(--err); background:var(--red-soft, #fdeae6);
+    }
+    select{appearance:none; background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232a313d' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right .8rem center; padding-right:2.2rem;
+    }
+
+    .input-unit{position:relative; display:flex; align-items:center}
+    .input-unit input{padding-right:3.2rem}
+    .input-unit .unit{
+      position:absolute; right:.7rem; font-family:"IBM Plex Mono",monospace;
+      font-size:.82rem; color:var(--muted); pointer-events:none;
+      border-left:1px solid var(--line); padding-left:.6rem;
+    }
+    .input-split{display:grid; grid-template-columns:1fr auto; gap:.5rem}
+    .input-split select{width:auto; min-width:6.6rem}
+
+    .err{color:var(--err); font-size:.76rem; margin:0; min-height:0; display:none}
+    .err.show{display:block}
+
+    .form-actions{display:flex; gap:.7rem; flex-wrap:wrap; margin-top:.2rem}
+    .btn{
+      font:inherit; font-weight:600; cursor:pointer; border:0; border-radius:11px;
+      padding:.72rem 1.4rem; text-decoration:none; display:inline-flex; align-items:center;
+      justify-content:center; gap:.4rem; transition:transform .15s ease, filter .15s ease, background .15s ease;
+    }
+    .btn-primary{background:var(--amber); color:var(--ink)}
+    .btn-primary:hover{filter:brightness(1.05); transform:translateY(-1px)}
+    .btn-steel{background:var(--steel); color:#fff}
+    .btn-steel:hover{background:#1d212a; transform:translateY(-1px)}
+    .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--line-strong)}
+    .btn-ghost:hover{border-color:var(--ink); background:var(--card)}
+
+    /* ---------- Summary (spec sheet) ---------- */
+    .summary-col{position:sticky; top:86px; display:flex; flex-direction:column; gap:1rem}
+    .spec{
+      background:var(--ink); 
+      color:#fff; /* For visibility: use solid white */
+      border-radius:var(--radius);
+      padding:1.4rem 1.3rem 1.2rem; position:relative; overflow:hidden;
+      box-shadow:var(--shadow);
+    }
+    .spec-notch{
+      position:absolute; inset:0 0 auto 0; height:6px;
+      background:repeating-linear-gradient(90deg, var(--amber) 0 14px, transparent 14px 24px);
+    }
+    .spec-head{display:flex; align-items:center; justify-content:space-between; margin-top:.4rem}
+    .spec-tag{font-size:.92rem; font-weight:600; color:#fff; letter-spacing:.03em}
+    .spec-type{
+      font-size:.82rem; font-weight:700; letter-spacing:.14em; color:var(--ink);
+      background:var(--amber); padding:.18rem .55rem; border-radius:5px;
+    }
+    .spec-title{
+      font-size:1.7rem; font-weight:700; margin:.5rem 0 1rem; color:#fff; line-height:1;
+    }
+    .spec-rows{
+      margin:0; 
+      display:flex; 
+      flex-direction:column; 
+      gap:.1rem;
+      color: #fff;
+    }
+    .spec-row{
+      display:grid; grid-template-columns:1fr auto; gap:1.1rem; align-items:baseline;
+      padding:.5rem 0; border-bottom:1px dashed rgba(255,255,255,.12);
+    }
+    .spec-row dt{
+      color:#bfc7d1 !important; /* changed to even brighter for accessibility */
+      font-size:.8rem
+    }
+    .spec-row dd{
+      margin:0; font-family:"IBM Plex Mono",monospace; font-size:.86rem; color:#fff;
+      text-align:right; word-break:break-word;
+    }
+    .spec-row dd.empty{color:#bac2c9; font-style:normal}
+    .spec-foot{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top:1rem; padding-top:.9rem; border-top:1px solid rgba(255,255,255,.14);
+      color:#fff;
+    }
+    .spec-status{
+      font-size:.74rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em;
+      color:var(--ink); background:#6c7382; padding:.22rem .6rem; border-radius:999px;
+    }
+    .spec-status.ready{background:var(--ok); color:#fff}
+    .spec-ref{font-family:"IBM Plex Mono",monospace; font-size:.74rem; color:#d1d3e0}
+
+    .send-panel{
+      background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:1.2rem;
+    }
+    .send-title{font-family:"Barlow Condensed",sans-serif; font-size:1.35rem; font-weight:700; margin:0 0 .15rem}
+    .send-sub{margin:0 0 1rem; color:var(--muted); font-size:.88rem}
+    .send-actions{display:flex; flex-direction:column; gap:.55rem}
+    .send-actions .btn{width:100%}
+    .link-reset{
+      background:none; border:0; color:var(--steel); font:inherit; font-weight:600;
+      cursor:pointer; margin-top:.9rem; padding:.2rem 0;
+    }
+    .link-reset:hover{color:var(--ink)}
+    .copy-toast{
+      margin:.7rem 0 0; font-size:.82rem; font-weight:600; color:var(--ok);
+    }
+
+    .site-footer{border-top:1px solid var(--line); background:#e2e6ed}
+    .footer-inner{display:flex; align-items:center; gap:.5rem; height:58px; font-size:.82rem; color:var(--muted); flex-wrap:wrap}
+    .footer-inner .grow{flex:1}
+    .footer-inner code{font-family:"IBM Plex Mono",monospace; font-size:.78rem; background:#d2d8e2; padding:.1rem .35rem; border-radius:5px}
+    .dot{color:var(--line-strong)}
+
+    .is-hidden{display:none !important}
+    .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0}
+
+    @media (max-width:920px){
+      .layout{grid-template-columns:1fr; gap:1.2rem}
+      .summary-col{position:static; order:-1}
+      .seg{top:78px}
+    }
+    @media (max-width:560px){
+      .grid{grid-template-columns:1fr}
+      .span-2{grid-column:auto}
+      .header-cta{display:none}
+      .hero{padding:2.2rem 0 1rem}
+      .form-actions .btn{flex:1}
+    }
+  </style>
+</head>
+<body>
+  <!-- ====== Header Unificado (Con enlace a la agenda) ====== -->
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-mark" aria-hidden="true">🏗️</span>
+        <span class="brand-text">
+          <strong data-bind="brand">Neosconstruccions S.A.S</strong>
+          <small>Pilotaje · Movimiento de tierra</small>
+        </span>
+      </a>
+      <a class="header-cta" href="#formulario">Pedir cotización</a>
+    </div>
+    <div class="header-rule" aria-hidden="true"></div>
+  </header>
+
+  <!-- ====== Hero ====== -->
+  <section class="hero wrap">
+    <p class="eyebrow">Formulario técnico</p>
+    <h1>Solicitud de cotización</h1>
+    <p class="lead">
+      Cuéntanos los datos de tu obra y recibe una propuesta ajustada.
+      Elige el tipo de trabajo y completa la ficha; el resumen se arma a la derecha
+      a medida que escribes.
+    </p>
+  </section>
+
+  <!-- ====== Main ====== -->
+  <main class="wrap layout" id="formulario">
+    <!-- ---- Form column ---- -->
+    <form id="quote-form" class="form-col" novalidate>
+      <!-- Tipo de trabajo -->
+      <div class="seg" role="tablist" aria-label="Tipo de trabajo">
+        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true" data-type="pilotes">
+          <span class="seg-k">01</span> Pilotaje
+        </button>
+        <button type="button" class="seg-btn" role="tab" aria-selected="false" data-type="excavacion">
+          <span class="seg-k">02</span> Excavación
+        </button>
+      </div>
+
+      <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const form = document.getElementById("quote-form");
+
+  const segButtons = document.querySelectorAll(".seg-btn");
+
+  const panels = document.querySelectorAll(".panel");
+
+  const specType = document.querySelector("[data-spec-type]");
+
+  const specRows = document.querySelector("[data-spec-rows]");
+
+  
+  let currentType = "pilotes"; // Tipo por defecto
+
+  // 1. Funcionalidad de los botones de opción (Tabs)
+  segButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const type = btn.getAttribute("data-type");
+      if (type === currentType) return;
+      currentType = type;
+
+      // Actualizar estados visuales de los botones
+      segButtons.forEach(b => {
+        const isActive = b === btn;
+        b.classList.toggle("is-active", isActive);
+        b.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      // Mostrar u ocultar los paneles técnicos correspondientes
+      panels.forEach(panel => {
+        const isTarget = panel.getAttribute("data-panel") === type;
+        panel.classList.toggle("is-hidden", !isTarget);
+      });
+
+      // Actualizar el tipo en la ficha resumen lateral
+      if (specType) {
+        specType.textContent = type === "pilotes" ? "PILOTAJE" : "EXCAVACIÓN";
+      }
+
+      updateSummary();
+    });
+  });
+
+  // 2. Actualizar el resumen dinámicamente al escribir en los campos
+  form.addEventListener("input", updateSummary);
+  form.addEventListener("change", updateSummary);
+
+  function updateSummary() {
+    if (!specRows) return;
+    specRows.innerHTML = "";
+
+    const formData = new FormData(form);
+    let hasData = false;
+
+    formData.forEach((value, key) => {
+      if (value.trim() !== "") {
+        hasData = true;
+        const row = document.createElement("div");
+        row.className = "spec-row";
+        
+        const dt = document.createElement("dt");
+        dt.textContent = formatLabel(key);
+        
+        const dd = document.createElement("dd");
+        dd.textContent = value;
+        
+        row.appendChild(dt);
+        row.appendChild(dd);
+        specRows.appendChild(row);
+      }
+    });
+
+    if (!hasData) {
+      const emptyRow = document.createElement("div");
+      emptyRow.className = "spec-row";
+      emptyRow.innerHTML = '<dt>Estado</dt><dd class="empty">Sin datos ingresados</dd>';
+      specRows.appendChild(emptyRow);
+    }
+  }
+
+  function formatLabel(key) {
+    const labels = {
+      empresa: "Compañía",
+      direccion: "Dirección",
+      telefono: "Teléfono",
+      obra: "Obra",
+      ubicacion: "Ubicación",
+      diametro: "Diámetro",
+      profundidad_pilote: "Prof. Pilote",
+      cantidad: "Cant. Pilotes",
+      estudio_suelos: "Estudio suelos",
+      m3_excavacion: "Vol. Excavación",
+      m3_descapote: "Vol. Descapote",
+      profundidad_excavacion: "Prof. Excavación",
+      tipo_maquinaria: "Maquinaria",
+      horas_alquiler: "Horas/día",
+      tiempo_alquiler: "Tiempo",
+      tiempo_unidad: "Unidad tiempo",
+      notas: "Notas"
+    };
+    return labels[key] || key;
+  }
+
+  updateSummary();
+
+});
+</script>
+
+
+
+      
+
+      <!-- ====== Datos del cliente (común) ====== -->
+      <fieldset class="card">
+        <legend><span class="legend-k">A</span> Datos del cliente</legend>
+        <div class="grid">
+          <div class="field span-2">
+            <label for="empresa">Nombre de la compañía</label>
+            <input id="empresa" name="empresa" type="text" autocomplete="organization" placeholder="Constructora del Norte S.A.S." required />
+            <p class="err" data-err></p>
+          </div>
+          <div class="field span-2">
+            <label for="direccion">Dirección</label>
+            <input id="direccion" name="direccion" type="text" autocomplete="street-address" placeholder="Cra 50 #80-23, Barranquilla" required />
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="telefono">Teléfono <span class="hint" data-phone-hint>cliente</span></label>
+            <input id="telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="+57 300 000 0000" required />
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="obra">Nombre de la obra</label>
+            <input id="obra" name="obra" type="text" placeholder="Edificio Marea — Torre 1" required />
+            <p class="err" data-err></p>
+          </div>
+          <div class="field span-2">
+            <label for="ubicacion">Ubicación de la obra</label>
+            <input id="ubicacion" name="ubicacion" type="text" placeholder="Calle 84 con Cra 53, Barranquilla" required />
+            <p class="err" data-err></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- ====== Datos técnicos: PILOTES ====== -->
+      <fieldset class="card panel" data-panel="pilotes">
+        <legend><span class="legend-k">B</span> Datos técnicos · pilotaje</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="diametro">Diámetro del pilote</label>
+            <div class="input-unit">
+              <input id="diametro" name="diametro" type="number" min="10" step="1" list="diametros" placeholder="50" />
+              <span class="unit">cm</span>
+            </div>
+            <datalist id="diametros">
+              <option value="30"></option><option value="40"></option>
+              <option value="50"></option><option value="60"></option>
+              <option value="80"></option><option value="100"></option>
+            </datalist>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="profundidad-p">Profundidad del pilote</label>
+            <div class="input-unit">
+              <input id="profundidad-p" name="profundidad_pilote" type="number" min="0" step="0.5" placeholder="12" />
+              <span class="unit">m</span>
+            </div>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="cantidad">Cantidad de pilotes</label>
+            <div class="input-unit">
+              <input id="cantidad" name="cantidad" type="number" min="1" step="1" placeholder="24" />
+              <span class="unit">und</span>
+            </div>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="suelos">Estudio de suelos</label>
+            <select id="suelos" name="estudio_suelos">
+              <option value="" disabled selected>Selecciona…</option>
+              <option value="Disponible (se adjunta)">Disponible — lo adjunto</option>
+              <option value="Disponible (lo envío luego)">Disponible — lo envío luego</option>
+              <option value="No disponible">No disponible</option>
+              <option value="Lo requiero con la empresa">Lo requiero con ustedes</option>
+            </select>
+            <p class="err" data-err></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- ====== Datos técnicos: EXCAVACIÓN ====== -->
+      <fieldset class="card panel is-hidden" data-panel="excavacion">
+        <legend><span class="legend-k">B</span> Datos técnicos · excavación</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="m3-exc">Metros cúbicos de excavación</label>
+            <div class="input-unit">
+              <input id="m3-exc" name="m3_excavacion" type="number" min="0" step="1" placeholder="850" />
+              <span class="unit">m³</span>
+            </div>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="m3-desc">Metros cúbicos de descapote</label>
+            <div class="input-unit">
+              <input id="m3-desc" name="m3_descapote" type="number" min="0" step="1" placeholder="200" />
+              <span class="unit">m³</span>
+            </div>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="profundidad-e">Profundidad de excavación</label>
+            <div class="input-unit">
+              <input id="profundidad-e" name="profundidad_excavacion" type="number" min="0" step="0.5" placeholder="4" />
+              <span class="unit">m</span>
+            </div>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="maquinaria">Tipo de maquinaria</label>
+            <select id="maquinaria" name="tipo_maquinaria">
+              <option value="" disabled selected>Selecciona…</option>
+              <option>Retroexcavadora</option>
+              <option>Excavadora de oruga</option>
+              <option>Bulldozer / Topadora</option>
+              <option>Cargador frontal</option>
+              <option>Minicargador</option>
+              <option>Volqueta</option>
+              <option>A recomendación de la empresa</option>
+            </select>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="horas">Horas de alquiler <span class="hint">por día</span></label>
+            <div class="input-unit">
+              <input id="horas" name="horas_alquiler" type="number" min="1" step="1" placeholder="8" />
+              <span class="unit">h/día</span>
+            </div>
+            <p class="err" data-err></p>
+          </div>
+          <div class="field">
+            <label for="tiempo">Tiempo de alquiler</label>
+            <div class="input-split">
+              <input id="tiempo" name="tiempo_alquiler" type="number" min="1" step="1" placeholder="15" />
+              <select id="tiempo-unidad" name="tiempo_unidad" aria-label="Unidad de tiempo de alquiler">
+                <option value="días">días</option>
+                <option value="semanas">semanas</option>
+                <option value="meses">meses</option>
+              </select>
+            </div>
+            <p class="err" data-err></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- ====== Notas ====== -->
+      <fieldset class="card">
+        <legend><span class="legend-k">C</span> Notas adicionales <span class="opt">(opcional)</span></legend>
+        <div class="field">
+          <label class="sr-only" for="notas">Notas</label>
+          <textarea id="notas" name="notas" rows="3" placeholder="Condiciones de acceso, fechas tentativas, requerimientos especiales…"></textarea>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Generar solicitud</button>
+        <button type="reset" class="btn btn-ghost">Limpiar</button>
+      </div>
+    </form>
+
+    <!-- ---- Summary column (signature) ---- -->
+    <aside class="summary-col">
+      <div class="spec" id="spec-sheet" aria-live="polite">
+        <div class="spec-notch" aria-hidden="true"></div>
+        <div class="spec-head">
+          <span class="spec-tag" data-bind="brand">Cimentaciones &amp; Excavaciones</span>
+          <span class="spec-type" data-spec-type>PILOTAJE</span>
+        </div>
+        <h2 class="spec-title">Ficha de la solicitud</h2>
+        <dl class="spec-rows" data-spec-rows>
+          <!-- filled by JS -->
+        </dl>
+        <div class="spec-foot">
+          <span class="spec-status" data-spec-status>Borrador</span>
+          <span class="spec-ref" data-spec-ref>REF —</span>
+        </div>
+      </div>
+
+      <!-- Success / send panel -->
+      <div class="send-panel is-hidden" id="send-panel">
+        <p class="send-title">Solicitud lista</p>
+        <p class="send-sub">Revisa la ficha y envíala por el canal que prefieras.</p>
+        <div class="send-actions">
+          <a class="btn btn-primary" id="send-wa" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+          <a class="btn btn-steel" id="send-mail">Enviar por correo</a>
+          <button class="btn btn-ghost" id="send-copy" type="button">Copiar texto</button>
+          <button class="btn btn-ghost" id="send-print" type="button">Imprimir / PDF</button>
+        </div>
+        <button class="link-reset" id="send-new" type="button">← Hacer otra solicitud</button>
+        <p class="copy-toast is-hidden" id="copy-toast">Copiado al portapapeles</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <span data-bind="brand">Neosconstruccions S.A.S</span>
+      <span class="dot">·</span>
+      <span>Solicitud de cotización</span>
+      <span class="grow"></span>
+      <span class="muted">Configura tu WhatsApp y correo en <code>app.js</code></span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

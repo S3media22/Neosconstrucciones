@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Agenda de maquinaria de construcción con calendario, Google Calendar y notificación por WhatsApp.">
+<title>Neosconstruccions S.A.S · Agenda de maquinaria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ TOKENS ============ */
+  :root{
+    --ink:#14161b; --ink-2:#1d212a; --steel:#2a313d;
+    --paper:#eef1f5; --surface:#ffffff; --line:#dde2ea; --line-2:#e9edf3;
+    --text:#1b2027; --muted:#69727f; --muted-2:#9aa3b0;
+    --amber:#f5a623; --amber-deep:#d98a00; --amber-soft:#fff3da;
+    --blue:#2d6cdf; --blue-soft:#e7eefc;
+    --green:#159a5e; --green-soft:#e2f5ec;
+    --red:#e04f37; --red-soft:#fdeae6;
+    --gray-st:#7a8493;
+    --radius:14px; --radius-sm:10px;
+    --shadow:0 1px 2px rgba(20,22,27,.04), 0 8px 24px -12px rgba(20,22,27,.18);
+    --shadow-lg:0 24px 60px -24px rgba(20,22,27,.45);
+    --display:"Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+    --body:"Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --hazard:repeating-linear-gradient(45deg,var(--amber) 0 14px,var(--ink) 14px 28px);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--body); color:var(--text); background:var(--paper);
+    -webkit-font-smoothing:antialiased; line-height:1.45;
+  }
+  button{font-family:inherit; cursor:pointer}
+  h1,h2,h3{margin:0}
+  a{color:inherit}
+  :focus-visible{outline:3px solid var(--blue); outline-offset:2px; border-radius:6px}
+
+  /* ============ APP SHELL ============ */
+  .app{max-width:1240px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column}
+
+  /* ---- Topbar ---- */
+  .topbar{background:#052a61; color:#fff; position:relative}  /* Cambiado a #052a61 */
+  .topbar::after{content:""; display:block; height:6px; background:var(--hazard); opacity:.9}
+  .topbar__inner{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    padding:16px 22px;
+  }
+  .brand{display:flex; align-items:center; gap:12px; margin-right:auto}
+  .brand__mark{
+    width:42px; height:42px; border-radius:10px; flex:0 0 auto;
+    background:var(--amber); color:var(--ink);
+    display:grid; place-items:center; font-size:24px;
+    box-shadow:inset 0 0 0 2px rgba(0,0,0,.12);
+  }
+  .brand__name{font-family:var(--display); font-weight:700; font-size:26px; letter-spacing:.06em; line-height:1}
+  .brand__sub{font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--amber); font-weight:600}
+
+  .stats{display:flex; gap:10px; flex-wrap:wrap}
+  .stat{
+    background:var(--ink-2); border:1px solid #2c333f; border-radius:12px;
+    padding:8px 14px; min-width:84px;
+  }
+  .stat__n{font-family:var(--display); font-weight:700; font-size:24px; line-height:1; color:#fff}
+  .stat__l{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted-2)}
+  .stat--accent .stat__n{color:var(--amber)}
+
+  .topbar__actions{display:flex; gap:10px; align-items:center}
+  .icon-btn{
+    background:var(--ink-2); color:#cfd6e0; border:1px solid #2c333f;
+    width:42px; height:42px; border-radius:11px; font-size:18px; display:grid; place-items:center;
+    transition:background .15s,color .15s;
+  }
+  .icon-btn:hover{background:var(--steel); color:#fff}
+
+  .btn{
+    border:none; border-radius:11px; font-weight:600; font-size:15px;
+    padding:11px 18px; display:inline-flex; align-items:center; gap:9px;
+    transition:transform .12s, filter .15s, background .15s;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn--primary{background:var(--amber); color:var(--ink)}
+  .btn--primary:hover{filter:brightness(1.05)}
+  .btn--ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
+  .btn--ghost:hover{background:var(--paper)}
+  .btn--block{width:100%; justify-content:center}
+
+  /* ---- Toolbar ---- */
+  .toolbar{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding:16px 22px; background:var(--surface); border-bottom:1px solid var(--line);
+  }
+  .monthnav{display:flex; align-items:center; gap:6px}
+  .monthnav__label{
+    font-family:var(--display); font-weight:600; font-size:24px; letter-spacing:.02em;
+    text-transform:capitalize; min-width:188px; text-align:center;
+  }
+  .nav-btn{
+    width:38px; height:38px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface); font-size:18px; color:var(--text); display:grid; place-items:center;
+  }
+  .nav-btn:hover{background:var(--paper)}
+  .today-btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--text);
+    border-radius:10px; padding:9px 14px; font-weight:600; font-size:14px;
+  }
+  .today-btn:hover{background:var(--paper)}
+
+  .filters{display:flex; gap:10px; flex-wrap:wrap; margin-left:auto}
+  .field{display:flex; flex-direction:column; gap:4px}
+  .field > label{font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  select,input[type=text],input[type=datetime-local],input[type=tel],textarea{
+    font-family:var(--body); font-size:15px; color:var(--text);
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; width:100%;
+  }
+  select:focus,input:focus,textarea:focus{border-color:var(--blue); outline:none; box-shadow:0 0 0 3px var(--blue-soft)}
+  .search-wrap{position:relative}
+  .search-wrap input{padding-left:34px; min-width:180px}
+  .search-wrap::before{content:"⌕"; position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:18px}
+
+  /* ============ MAIN GRID ============ */
+  .main{display:grid; grid-template-columns:1.55fr 1fr; gap:0; flex:1; min-height:0}
+  @media (max-width:900px){ .main{grid-template-columns:1fr} }
+
+  /* ---- Calendar ---- */
+  .cal{padding:18px 22px 26px; background:var(--paper)}
+  .cal__weekdays{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:8px;
+  }
+  .cal__wd{text-align:center; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .cal__grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px}
+  .day{
+    background:var(--surface); border:1px solid var(--line-2); border-radius:12px;
+    min-height:96px; padding:8px; display:flex; flex-direction:column; gap:5px;
+    cursor:pointer; transition:border-color .12s, box-shadow .12s, transform .12s;
+    text-align:left; color:inherit; width:100%;
+  }
+  .day:hover{border-color:var(--blue); box-shadow:var(--shadow)}
+  .day--out{background:transparent; border-color:transparent; cursor:default}
+  .day--out:hover{box-shadow:none; border-color:transparent}
+  .day--out .day__num{color:var(--muted-2)}
+  .day--today{border-color:var(--amber); box-shadow:inset 0 0 0 1px var(--amber)}
+  .day--selected{border-color:var(--ink); box-shadow:0 0 0 2px var(--ink)}
+  .day__top{display:flex; align-items:center; justify-content:space-between}
+  .day__num{font-family:var(--display); font-weight:600; font-size:18px; line-height:1}
+  .day--today .day__num{
+    background:var(--amber); color:var(--ink); width:26px; height:26px;
+    border-radius:7px; display:grid; place-items:center; margin:-3px -3px 0 0;
+  }
+  .day__count{font-size:11px; font-weight:700; color:var(--muted)}
+  .chips{display:flex; flex-direction:column; gap:4px; overflow:hidden}
+  .chip{
+    font-size:11.5px; font-weight:600; padding:3px 7px; border-radius:6px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:5px;
+    border-left:3px solid currentColor;
+  }
+  .chip span{color:var(--text); overflow:hidden; text-overflow:ellipsis}
+  .chip__emoji{font-size:12px}
+  .chip--pendiente{background:var(--amber-soft); color:var(--amber-deep)}
+  .chip--confirmada{background:var(--green-soft); color:var(--green)}
+  .chip--en_curso{background:var(--blue-soft); color:var(--blue)}
+  .chip--completada{background:#eef0f3; color:var(--gray-st)}
+  .chip--cancelada{background:var(--red-soft); color:var(--red)}
+  .chip--more{background:transparent; color:var(--muted); border-left-color:transparent; padding-left:3px; font-weight:700}
+
+  /* ---- Day panel ---- */
+  .panel{
+    background:var(--surface); border-left:1px solid var(--line);
+    padding:20px 20px 28px; display:flex; flex-direction:column; gap:14px;
+  }
+  @media (max-width:900px){ .panel{border-left:none; border-top:1px solid var(--line)} }
+  .panel__head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px}
+  .panel__date{font-family:var(--display); font-weight:600; font-size:23px; text-transform:capitalize; line-height:1.05}
+  .panel__sub{font-size:13px; color:var(--muted)}
+  .panel__list{display:flex; flex-direction:column; gap:12px}
+
+  .booking{
+    border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; position:relative; overflow:hidden;
+  }
+  .booking::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:currentColor}
+  .booking--pendiente{color:var(--amber-deep)} .booking--confirmada{color:var(--green)}
+  .booking--en_curso{color:var(--blue)} .booking--completada{color:var(--gray-st)}
+  .booking--cancelada{color:var(--red)}
+  .booking__body{color:var(--text)}
+  .booking__top{display:flex; align-items:flex-start; gap:10px; margin-bottom:8px}
+  .booking__emoji{font-size:22px; line-height:1}
+  .booking__titles{flex:1; min-width:0}
+  .booking__machine{font-weight:700; font-size:16px; line-height:1.2}
+  .booking__client{font-size:13px; color:var(--muted)}
+  .badge{
+    font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    padding:4px 8px; border-radius:999px; white-space:nowrap; align-self:flex-start;
+  }
+  .badge--pendiente{background:var(--amber-soft); color:var(--amber-deep)}
+  .badge--confirmada{background:var(--green-soft); color:var(--green)}
+  .badge--en_curso{background:var(--blue-soft); color:var(--blue)}
+  .badge--completada{background:#eef0f3; color:var(--gray-st)}
+  .badge--cancelada{background:var(--red-soft); color:var(--red)}
+
+  .meta{display:flex; flex-direction:column; gap:4px; font-size:13.5px; color:var(--text); margin-bottom:12px}
+  .meta__row{display:flex; gap:8px; align-items:flex-start}
+  .meta__ic{width:18px; text-align:center; flex:0 0 auto; opacity:.8}
+  .meta__row--notes{color:var(--muted); font-style:italic}
+
+  .conflict{
+    display:flex; gap:7px; align-items:center; background:var(--red-soft); color:var(--red);
+    font-size:12.5px; font-weight:600; padding:7px 10px; border-radius:9px; margin-bottom:10px;
+  }
+
+  .booking__actions{display:flex; flex-wrap:wrap; gap:7px}
+  .act{
+    border:1px solid var(--line); background:var(--surface); color:var(--text);
+    border-radius:9px; padding:8px 11px; font-size:13px; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px; transition:background .12s,border-color .12s;
+  }
+  .act:hover{background:var(--paper)}
+  .act--gcal:hover{border-color:var(--blue); color:var(--blue)}
+  .act--wa{border-color:#25d36633; color:#0f7a3d}
+  .act--wa:hover{background:#e9f9ef; border-color:#25d366}
+  .act--edit:hover{border-color:var(--ink)}
+  .act--del{color:var(--red)}
+  .act--del:hover{background:var(--red-soft); border-color:var(--red)}
+
+  /* ---- Empty state ---- */
+  .empty{
+    border:1.5px dashed var(--line); border-radius:var(--radius);
+    padding:28px 20px; text-align:center; color:var(--muted);
+  }
+  .empty__ic{font-size:34px; display:block; margin-bottom:8px; opacity:.5}
+  .empty__t{font-weight:600; color:var(--text); margin-bottom:4px}
+  .empty .btn{margin-top:14px}
+
+  /* ============ MODAL ============ */
+  .overlay{
+    position:fixed; inset:0; background:rgba(16,18,23,.55); backdrop-filter:blur(2px);
+    display:none; align-items:flex-start; justify-content:center; padding:24px 16px; z-index:50;
+    overflow-y:auto;
+  }
+  .overlay.open{display:flex}
+  .modal{
+    background:var(--surface); border-radius:18px; box-shadow:var(--shadow-lg);
+    width:100%; max-width:560px; margin:auto; overflow:hidden;
+  }
+  .modal--narrow{max-width:440px}
+  .modal__head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:18px 22px; border-bottom:1px solid var(--line);
+  }
+  .modal__title{font-family:var(--display); font-weight:600; font-size:22px}
+  .modal__close{background:var(--paper); border:none; width:34px; height:34px; border-radius:9px; font-size:18px; color:var(--muted)}
+  .modal__close:hover{background:var(--line)}
+  .modal__body{padding:20px 22px; display:grid; gap:14px}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  @media (max-width:520px){ .grid-2{grid-template-columns:1fr} }
+  .modal__foot{
+    padding:16px 22px; border-top:1px solid var(--line);
+    display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;
+  }
+  .hint{font-size:12.5px; color:var(--muted); line-height:1.4}
+  .hint code{background:var(--paper); padding:1px 5px; border-radius:5px; font-size:12px}
+  .err{color:var(--red); font-size:13px; font-weight:600; display:none}
+  .err.show{display:block}
+
+  .phones{display:flex; flex-direction:column; gap:10px}
+  .phone-row{display:flex; gap:8px; align-items:center}
+  .phone-row .prefix{color:var(--muted); font-weight:600; font-size:15px; padding:0 2px}
+  .phone-row button{flex:0 0 auto; background:var(--red-soft); color:var(--red); border:none; border-radius:9px; width:40px; height:40px; font-size:18px}
+
+  /* ---- Toast ---- */
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff; padding:13px 20px; border-radius:12px;
+    font-weight:600; font-size:14.5px; box-shadow:var(--shadow-lg);
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:60;
+    display:flex; align-items:center; gap:9px; max-width:90vw;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .toast__bar{width:8px; height:8px; border-radius:50%; background:var(--amber); flex:0 0 auto}
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; padding:0 22px 18px; background:var(--paper)}
+  .legend__item{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted)}
+  .legend__dot{width:11px; height:11px; border-radius:3px}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important}
+  }
+  @media (max-width:560px){
+    .topbar__inner{padding:14px 16px}
+    .toolbar{padding:13px 16px}
+    .cal{padding:14px 16px 20px}
+    .cal__grid{gap:5px}
+    .day{min-height:74px; padding:6px; border-radius:9px}
+    .chip{font-size:10.5px}
+    .stats{order:3; width:100%}
+    .panel{padding:18px 16px 26px}
+  }
+
+/* --- Bloques del formulario de agendamiento --- */
+.section-label{
+  margin:18px 0 10px;padding-top:14px;
+  border-top:1px solid var(--line,#e2e8f0);
+  font-size:.78rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted,#64748b);
+}
+.modal__body .section-label:first-of-type{margin-top:16px}
+.lbl-note{font-weight:500;text-transform:none;letter-spacing:0;opacity:.65}
+#durHint{margin-top:-2px}
+
+/* --- Íconos de maquinaria --- */
+.mi{width:28px;height:28px;display:block;overflow:visible}
+.mi--sm{width:18px;height:18px}
+.mi .mi-yl{fill:#f4b400}
+.mi .mi-out{stroke:#1f2937;stroke-width:1.6;stroke-linejoin:round}
+.mi .mi-dk{fill:#263445}
+.mi .mi-lt{fill:#9aa8b8}
+.mi .mi-sk{fill:#bfe3ff}
+.mi .mi-st{stroke:#263445;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mi .mi-thick{stroke-width:3.4}
+.booking__emoji{display:flex;align-items:center}
+.chip__emoji{display:inline-flex;align-items:center}
+
+/* --- Selector de máquina con íconos --- */
+.msel{position:relative}
+.msel__btn{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:9px 34px 9px 11px;border-radius:10px;text-align:left;
+  border:1px solid var(--line,#d8dee9);background:var(--card,#fff);
+  color:inherit;font:inherit;cursor:pointer;
+}
+.msel__btn:after{
+  content:"";position:absolute;right:13px;top:50%;width:7px;height:7px;
+  border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:translateY(-70%) rotate(45deg);opacity:.5;
+}
+.msel__btn:focus-visible{outline:2px solid var(--brand,#f4b400);outline-offset:1px}
+.msel.open .msel__btn{border-color:var(--brand,#f4b400)}
+.msel__list{
+  display:none;position:absolute;z-index:40;left:0;right:0;top:calc(100% + 4px);
+  max-height:270px;overflow:auto;padding:5px;
+  background:var(--card,#fff);border:1px solid var(--line,#d8dee9);
+  border-radius:12px;box-shadow:0 18px 40px -18px rgba(15,23,42,.45);
+}
+.msel.open .msel__list{display:block}
+.msel__opt{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:8px;cursor:pointer;
+}
+.msel__opt:hover,.msel__opt.active{background:var(--soft,#f1f5f9)}
+.msel__opt[aria-selected="true"]{font-weight:700}
+.msel .mi{flex:none}
+.sr-select{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ TOPBAR ============ -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <div class="brand__mark">🏗️</div>
+        <div>
+          <!-- Envuelve el nombre en un enlace a index.html -->
+          <div class="brand__name"><a href="index.html" style="text-decoration:none;color:inherit;">Neosconstruccions S.A.S</a></div>
+          <div class="brand__sub">Agenda de maquinaria</div>
+        </div>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="topbar__actions">
+        <button class="icon-btn" id="btnSettings" title="Configurar números de WhatsApp" aria-label="Configuración">⚙️</button>
+        <button class="btn btn--primary" id="btnNew">＋ Nuevo agendamiento</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ TOOLBAR ============ -->
+  <div class="toolbar">
+    <div class="monthnav">
+      <button class="nav-btn" id="prevMonth" aria-label="Mes anterior">‹</button>
+      <div class="monthnav__label" id="monthLabel">—</div>
+      <button class="nav-btn" id="nextMonth" aria-label="Mes siguiente">›</button>
+    </div>
+    <button class="today-btn" id="btnToday">Hoy</button>
+
+    <div class="filters">
+      <div class="field">
+        <label for="fMachine">Máquina</label>
+        <select id="fMachine"><option value="">Todas</option></select>
+      </div>
+      <div class="field">
+        <label for="fStatus">Estado</label>
+        <select id="fStatus">
+          <option value="">Todos</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmada">Confirmada</option>
+          <option value="en_curso">En curso</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fSearch">Buscar</label>
+        <div class="search-wrap"><input type="text" id="fSearch" placeholder="Cliente, obra, operador…" autocomplete="off"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <section class="cal" aria-label="Calendario">
+      <div class="cal__weekdays" id="weekdays"></div>
+      <div class="cal__grid" id="calGrid"></div>
+    </section>
+
+    <aside class="panel" aria-label="Agendamientos del día">
+      <div class="panel__head">
+        <div>
+          <div class="panel__date" id="panelDate">—</div>
+          <div class="panel__sub" id="panelSub">Selecciona un día</div>
+        </div>
+        <button class="btn btn--ghost" id="btnNewDay">＋ Agregar</button>
+      </div>
+      <div class="panel__list" id="panelList"></div>
+    </aside>
+  </div>
+
+  <div class="legend">
+    <div class="legend__item"><span class="legend__dot" style="background:var(--amber)"></span>Pendiente</div>
+    <div class="legend__item"><span class="legend__dot" style="background:var(--green)"></span>Confirmada</div>
+    <div class="legend__item"><span class="legend__dot" style="background:var(--blue)"></span>En curso</div>
+    <div class="legend__item"><span class="legend__dot" style="background:var(--gray-st)"></span>Completada</div>
+    <div class="legend__item"><span class="legend__dot" style="background:var(--red)"></span>Cancelada</div>
+  </div>
+</div>
+
+<!-- ============ MODAL: AGENDAMIENTO ============ -->
+<div class="overlay" id="formOverlay" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+   <div class="modal">
+    <div class="modal__head">
+      <h2 class="modal__title" id="formTitle">Nuevo agendamiento</h2>
+      <button class="modal__close" data-close aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="bId">
+      <div class="field">
+        <label for="bMachine">Máquina *</label>
+        <select id="bMachine"></select>
+      </div>
+      <div class="field" id="customMachineWrap" style="display:none">
+        <label for="bMachineCustom">Nombre de la máquina</label>
+        <input type="text" id="bMachineCustom" placeholder="Ej. Excavadora CAT 320D">
+      </div>
+      <div class="field">
+        <label for="bClient">Cliente / Obra</label>
+        <input type="text" id="bClient" placeholder="Constructora o proyecto">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="bClientPhone">Teléfono cliente</label>
+          <input type="tel" id="bClientPhone" placeholder="Teléfono de contacto del cliente">
+        </div>
+        <div class="field">
+          <label for="bClientEmail">Correo electrónico cliente</label>
+          <input type="email" id="bClientEmail" placeholder="Correo electrónico del cliente">
+        </div>
+      </div>
+      <div class="field">
+        <label for="bClientAddress">Dirección cliente</label>
+        <input type="text" id="bClientAddress" placeholder="Dirección principal del cliente">
+      </div>
+      <div class="section-label">Ubicación de la obra</div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="bDepto">Departamento</label>
+          <select id="bDepto"></select>
+        </div>
+        <div class="field">
+          <label for="bCity">Ciudad o municipio</label>
+          <input type="text" id="bCity" placeholder="Ciudad donde se ejecuta la obra">
+        </div>
+      </div>
+      <div class="field">
+        <label for="bLocation">Dirección o frente de obra</label>
+        <input type="text" id="bLocation" placeholder="Ej. Calle 161a # 8-58 · frente norte">
+      </div>
+
+      <div class="section-label">Tiempo de préstamo de la maquinaria</div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="bDurQty">Cantidad</label>
+          <input type="number" id="bDurQty" min="1" step="1" value="8" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="bDurUnit">Unidad</label>
+          <select id="bDurUnit">
+            <option value="hora">Horas de máquina</option>
+            <option value="dia">Días</option>
+            <option value="semana">Semanas</option>
+            <option value="mes">Meses</option>
+            <option value="anio">Años</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint" id="durHint">La fecha de fin se calcula sola a partir del inicio y del tiempo de préstamo. Puedes ajustarla a mano si lo necesitas.</p>
+      <div class="grid-2">
+        <div class="field">
+          <label for="bStart">Inicio *</label>
+          <input type="datetime-local" id="bStart">
+        </div>
+        <div class="field">
+          <label for="bEnd">Fin * <span class="lbl-note">(calculado)</span></label>
+          <input type="datetime-local" id="bEnd">
+        </div>
+      </div>
+      <div class="field">
+        <label for="bStatus">Estado</label>
+        <select id="bStatus">
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmada">Confirmada</option>
+          <option value="en_curso">En curso</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bNotes">Notas</label>
+        <textarea id="bNotes" rows="2" placeholder="Combustible, accesorios, requisitos especiales…"></textarea>
+      </div>
+      <div class="err" id="formErr"></div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" data-close>Cancelar</button>
+      <button class="btn btn--primary" id="btnSave">Guardar agendamiento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CONFIG ============ -->
+<div class="overlay" id="cfgOverlay" role="dialog" aria-modal="true" aria-labelledby="cfgTitle">
+  <div class="modal modal--narrow">
+    <div class="modal__head">
+      <h2 class="modal__title" id="cfgTitle">Números de WhatsApp</h2>
+      <button class="modal__close" data-close-cfg aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal__body">
+      <p class="hint">Estos números reciben la notificación del agendamiento. Se abren con el mensaje ya redactado; tú confirmas el envío con un toque. Usa el formato local sin <code>+57</code>.</p>
+      <div class="phones" id="phonesList"></div>
+      <button class="btn btn--ghost btn--block" id="addPhone">＋ Agregar número</button>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" data-close-cfg>Cancelar</button>
+      <button class="btn btn--primary" id="btnSaveCfg">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="toast__bar"></span><span id="toastMsg"></span></div>
+
+<script>
+/* =====================================================================
+   OBRADAR · Agenda de maquinaria de construcción
+   100% HTML/CSS/JS. Persistencia local (localStorage).
+   ===================================================================== */
+
+const COUNTRY_CODE = "57"; // Colombia
+const STORE_BOOKINGS = "obradar_bookings_v1";
+const STORE_CONFIG   = "obradar_config_v1";
+
+const MACHINES = [
+  {v:"Excavadora",            k:"excavadora",      e:"⛏️"},
+  {v:"Retroexcavadora",       k:"retro",           e:"🚜"},
+  {v:"Bulldozer",             k:"bulldozer",       e:"🚧"},
+  {v:"Motoniveladora",        k:"motoniveladora",  e:"🛣️"},
+  {v:"Cargador frontal",      k:"cargador",        e:"🪣"},
+  {v:"Minicargador (Bobcat)", k:"minicargador",    e:"🛻"},
+  {v:"Volqueta",              k:"volqueta",        e:"🚛"},
+  {v:"Grúa",                  k:"grua",            e:"🏗️"},
+  {v:"Vibrocompactador",      k:"vibro",           e:"🛞"},
+  {v:"Compactadora",          k:"compactadora",    e:"⚙️"},
+  {v:"Montacargas",           k:"montacargas",     e:"📦"},
+  {v:"Otra",                  k:"otra",            e:"🛠️"}
+];
+
+/* ---------- Íconos SVG de maquinaria (amarillo obra) ----------
+   Cada máquina tiene su propio dibujo: el emoji solo se usa dentro
+   del <select>, donde el navegador no admite SVG.                */
+const MACHINE_ICONS = {
+  excavadora:`<rect x="2" y="34" width="26" height="8" rx="4" class="mi-dk"/><circle cx="8" cy="38" r="2" class="mi-lt"/><circle cx="15" cy="38" r="2" class="mi-lt"/><circle cx="22" cy="38" r="2" class="mi-lt"/><path d="M6 33V24h14v9z" class="mi-yl"/><path d="M9 27h7v4H9z" class="mi-sk"/><path d="M20 27 36 14" class="mi-st"/><path d="m36 14 6 9" class="mi-st"/><path d="M42 23c0 4-4 6-8 5l1-7z" class="mi-yl mi-out"/>`,
+  retro:`<rect x="6" y="30" width="30" height="6" rx="3" class="mi-yl"/><circle cx="13" cy="38" r="5" class="mi-dk"/><circle cx="31" cy="38" r="6.5" class="mi-dk"/><circle cx="13" cy="38" r="1.8" class="mi-lt"/><circle cx="31" cy="38" r="2.2" class="mi-lt"/><path d="M17 30v-8h10v8z" class="mi-yl"/><path d="M19 24h6v4h-6z" class="mi-sk"/><path d="M8 30 2 26v-6" class="mi-st"/><path d="M2 20h7v5H2z" class="mi-yl mi-out"/><path d="M36 28l7-8" class="mi-st"/><path d="M43 20c3 2 3 6 0 7l-4-4z" class="mi-yl mi-out"/>`,
+  bulldozer:`<rect x="10" y="32" width="26" height="9" rx="4.5" class="mi-dk"/><circle cx="16" cy="36.5" r="2" class="mi-lt"/><circle cx="24" cy="36.5" r="2" class="mi-lt"/><circle cx="32" cy="36.5" r="2" class="mi-lt"/><path d="M16 31v-9h12v9z" class="mi-yl"/><path d="M19 24h6v4h-6z" class="mi-sk"/><path d="M4 22h5v18H4z" class="mi-yl mi-out"/><path d="M9 30h7" class="mi-st"/>`,
+  motoniveladora:`<circle cx="9" cy="37" r="5" class="mi-dk"/><circle cx="36" cy="37" r="5" class="mi-dk"/><circle cx="43" cy="37" r="5" class="mi-dk"/><path d="M6 30h38v-4H6z" class="mi-yl"/><path d="M33 26v-8h9v8z" class="mi-yl"/><path d="M35 20h5v4h-5z" class="mi-sk"/><path d="M14 30v6" class="mi-st"/><path d="M12 36h14" class="mi-st mi-thick"/>`,
+  cargador:`<circle cx="16" cy="36" r="6.5" class="mi-dk"/><circle cx="34" cy="36" r="6.5" class="mi-dk"/><circle cx="16" cy="36" r="2.2" class="mi-lt"/><circle cx="34" cy="36" r="2.2" class="mi-lt"/><path d="M12 30h26v-6H12z" class="mi-yl"/><path d="M26 24v-8h11v8z" class="mi-yl"/><path d="M28 18h6v4h-6z" class="mi-sk"/><path d="M12 27 4 20" class="mi-st"/><path d="M2 14h6v10l-6 2z" class="mi-yl mi-out"/>`,
+  minicargador:`<circle cx="16" cy="34" r="6" class="mi-dk"/><circle cx="32" cy="34" r="6" class="mi-dk"/><circle cx="16" cy="34" r="2" class="mi-lt"/><circle cx="32" cy="34" r="2" class="mi-lt"/><path d="M12 30h24V16H20l-8 6z" class="mi-yl"/><path d="M22 19h9v6h-9z" class="mi-sk"/><path d="M12 26 5 30" class="mi-st"/><path d="M2 28h5v9H2z" class="mi-yl mi-out"/>`,
+  volqueta:`<circle cx="14" cy="37" r="5" class="mi-dk"/><circle cx="34" cy="37" r="5" class="mi-dk"/><circle cx="42" cy="37" r="5" class="mi-dk"/><path d="M4 32h10V20H8l-4 6z" class="mi-yl"/><path d="M6 22h6v4H6z" class="mi-sk"/><path d="m16 32 4-16h24l-4 16z" class="mi-yl mi-out"/><path d="M24 20h14" class="mi-st"/>`,
+  grua:`<rect x="6" y="34" width="26" height="8" rx="4" class="mi-dk"/><circle cx="12" cy="38" r="2" class="mi-lt"/><circle cx="19" cy="38" r="2" class="mi-lt"/><circle cx="26" cy="38" r="2" class="mi-lt"/><path d="M10 33V25h12v8z" class="mi-yl"/><path d="M12 27h7v4h-7z" class="mi-sk"/><path d="M20 26 44 8" class="mi-st mi-thick"/><path d="M44 8v10" class="mi-st"/><path d="M41 18h6v4h-6z" class="mi-yl mi-out"/><path d="M26 22 20 26" class="mi-st"/>`,
+  vibro:`<circle cx="13" cy="30" r="11" class="mi-yl mi-out"/><circle cx="13" cy="30" r="4" class="mi-dk"/><circle cx="38" cy="35" r="6" class="mi-dk"/><circle cx="38" cy="35" r="2" class="mi-lt"/><path d="M24 30h20v-6H24z" class="mi-yl"/><path d="M28 24v-8h11v8z" class="mi-yl"/><path d="M30 18h6v4h-6z" class="mi-sk"/>`,
+  compactadora:`<circle cx="12" cy="33" r="9" class="mi-yl mi-out"/><circle cx="12" cy="33" r="3.5" class="mi-dk"/><circle cx="36" cy="33" r="9" class="mi-yl mi-out"/><circle cx="36" cy="33" r="3.5" class="mi-dk"/><path d="M14 24h20v-8H14z" class="mi-yl"/><path d="M18 18h12v4H18z" class="mi-sk"/><path d="M20 16v-5h8v5" class="mi-st"/>`,
+  montacargas:`<circle cx="14" cy="36" r="6" class="mi-dk"/><circle cx="30" cy="36" r="4.5" class="mi-dk"/><circle cx="14" cy="36" r="2" class="mi-lt"/><path d="M8 30h24V16H16l-8 6z" class="mi-yl"/><path d="M18 19h10v6H18z" class="mi-sk"/><path d="M34 8v26" class="mi-st mi-thick"/><path d="M34 30h9" class="mi-st mi-thick"/><path d="M34 12h8" class="mi-st"/>`,
+  otra:`<path d="M30 6a10 10 0 0 0-9 14L8 33a4 4 0 0 0 6 6l13-13a10 10 0 0 0 12-14l-6 6-5-1-1-5z" class="mi-yl mi-out"/><circle cx="12" cy="35" r="1.8" class="mi-dk"/>`
+};
+const ST_LABEL = {pendiente:"Pendiente", confirmada:"Confirmada", en_curso:"En curso", completada:"Completada", cancelada:"Cancelada"};
+const WD = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+const fmtDay   = new Intl.DateTimeFormat("es-CO",{weekday:"long", day:"numeric", month:"long"});
+const fmtMonth = new Intl.DateTimeFormat("es-CO",{month:"long", year:"numeric"});
+const fmtTime  = new Intl.DateTimeFormat("es-CO",{hour:"numeric", minute:"2-digit", hour12:true});
+const fmtFull  = new Intl.DateTimeFormat("es-CO",{weekday:"short", day:"numeric", month:"short", year:"numeric", hour:"numeric", minute:"2-digit", hour12:true});
+
+/* ---------- State ---------- */
+let bookings = load(STORE_BOOKINGS, []);
+let config   = load(STORE_CONFIG, {phones:["3114903895","3174395112"]});
+let viewDate = startOfMonth(new Date());
+let selected = ymd(new Date());
+let filters  = {machine:"", status:"", q:""};
+
+/* ---------- Helpers ---------- */
+function load(k,f){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } }
+function save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ toast("No se pudo guardar en este navegador"); } }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+function ymd(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), da=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${da}`; }
+function parseLocal(s){ return s ? new Date(s) : null; }              // "YYYY-MM-DDTHH:MM" → Date local
+function machineEmoji(name){ const m = MACHINES.find(x=>x.v===name); return m?m.e:"🛠️"; }
+function machineIcon(name, cls){
+  const m = MACHINES.find(x=>x.v===name);
+  const paths = MACHINE_ICONS[m?m.k:"otra"] || MACHINE_ICONS.otra;
+  return `<svg class="mi ${cls||""}" viewBox="0 0 48 48" role="img" aria-label="${esc(name)}">${paths}</svg>`;
+}
+function esc(s){ return (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function dayKeysOf(b){ // todas las fechas YYYY-MM-DD que cubre la reserva
+  const out=[]; const s=new Date(b.start); const e=new Date(b.end||b.start);
+  let cur=new Date(s.getFullYear(),s.getMonth(),s.getDate());
+  const end=new Date(e.getFullYear(),e.getMonth(),e.getDate());
+  let guard=0;
+  while(cur<=end && guard<400){ out.push(ymd(cur)); cur.setDate(cur.getDate()+1); guard++; }
+  return out;
+}
+function matchesFilter(b){
+  if(filters.machine && b.machine!==filters.machine) return false;
+  if(filters.status  && b.status!==filters.status)  return false;
+  if(filters.q){
+    const hay=`${b.machine} ${b.client} ${b.depto||""} ${b.city||""} ${b.location} ${b.notes}`.toLowerCase();
+    if(!hay.includes(filters.q.toLowerCase())) return false;
+  }
+  return true;
+}
+function overlaps(b){ // detecta choque de la MISMA máquina en horario solapado
+  return bookings.some(o=> o.id!==b.id && o.machine===b.machine
+    && o.status!=="cancelada" && b.status!=="cancelada"
+    && new Date(o.start) < new Date(b.end) && new Date(b.start) < new Date(o.end));
+}
+
+/* ---------- Render: stats ---------- */
+function renderStats(){
+  const now=new Date();
+  const weekStart=new Date(now); const dow=(now.getDay()+6)%7; weekStart.setDate(now.getDate()-dow); weekStart.setHours(0,0,0,0);
+  const weekEnd=new Date(weekStart); weekEnd.setDate(weekStart.getDate()+7);
+  const active=bookings.filter(b=>b.status!=="cancelada" && b.status!=="completada");
+  const thisWeek=bookings.filter(b=>{ const s=new Date(b.start); return s>=weekStart && s<weekEnd && b.status!=="cancelada"; });
+  const machinesActive=new Set(active.map(b=>b.machine)).size;
+  document.getElementById("stats").innerHTML = `
+    <div class="stat stat--accent"><div class="stat__n">${active.length}</div><div class="stat__l">Activos</div></div>
+    <div class="stat"><div class="stat__n">${thisWeek.length}</div><div class="stat__l">Esta semana</div></div>
+    <div class="stat"><div class="stat__n">${machinesActive}</div><div class="stat__l">Máquinas</div></div>`;
+}
+
+/* ---------- Render: calendar ---------- */
+function renderWeekdays(){
+  document.getElementById("weekdays").innerHTML = WD.map(d=>`<div class="cal__wd">${d}</div>`).join("");
+}
+function renderCalendar(){
+  document.getElementById("monthLabel").textContent = fmtMonth.format(viewDate);
+  const grid=document.getElementById("calGrid"); grid.innerHTML="";
+  const first=startOfMonth(viewDate);
+  const lead=(first.getDay()+6)%7;                  // lunes=0
+  const start=new Date(first); start.setDate(1-lead);
+  const todayKey=ymd(new Date());
+
+  // índice de reservas por día (respeta filtros)
+  const byDay={};
+  bookings.filter(matchesFilter).forEach(b=>dayKeysOf(b).forEach(k=>{ (byDay[k]=byDay[k]||[]).push(b); }));
+
+  for(let i=0;i<42;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i);
+    const key=ymd(d);
+    const inMonth=d.getMonth()===viewDate.getMonth();
+    const items=(byDay[key]||[]).slice().sort((a,b)=>new Date(a.start)-new Date(b.start));
+    const cell=document.createElement(inMonth?"button":"div");
+    cell.className="day"+(inMonth?"":" day--out")+(key===todayKey?" day--today":"")+(key===selected&&inMonth?" day--selected":"");
+    if(inMonth){ cell.type="button"; cell.addEventListener("click",()=>{ selected=key; renderCalendar(); renderPanel(); }); }
+
+    let chips="";
+    items.slice(0,3).forEach(b=>{
+      chips+=`<div class="chip chip--${b.status}"><span class="chip__emoji">${machineIcon(b.machine,"mi--sm")}</span><span>${esc(b.machine)}</span></div>`;
+    });
+    if(items.length>3) chips+=`<div class="chip chip--more">+${items.length-3} más</div>`;
+
+    cell.innerHTML=`<div class="day__top"><span class="day__num">${d.getDate()}</span>${items.length?`<span class="day__count">${items.length}</span>`:""}</div><div class="chips">${chips}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+/* ---------- Render: day panel ---------- */
+function renderPanel(){
+  const d=new Date(selected+"T12:00:00");
+  document.getElementById("panelDate").textContent = fmtDay.format(d);
+  const items=bookings.filter(b=>matchesFilter(b) && dayKeysOf(b).includes(selected))
+                      .sort((a,b)=>new Date(a.start)-new Date(b.start));
+  document.getElementById("panelSub").textContent = items.length
+    ? `${items.length} agendamiento${items.length>1?"s":""}` : "Sin agendamientos";
+
+  const list=document.getElementById("panelList");
+  if(!items.length){
+    list.innerHTML=`<div class="empty"><span class="empty__ic">📭</span><div class="empty__t">Día libre</div>
+      <div>No hay maquinaria agendada para esta fecha.</div>
+      <button class="btn btn--primary" onclick="openForm(null,'${selected}')">＋ Agendar máquina</button></div>`;
+    return;
+  }
+  list.innerHTML = items.map(renderBooking).join("");
+}
+
+function renderBooking(b){
+  const s=new Date(b.start), e=new Date(b.end||b.start);
+  const sameDay = ymd(s)===ymd(e);
+  const when = sameDay
+    ? `${fmtTime.format(s)} – ${fmtTime.format(e)}`
+    : `${fmtFull.format(s)} → ${fmtFull.format(e)}`;
+  const conflict = overlaps(b);
+  const waBtns = (config.phones||[]).map((p,i)=>
+    `<a class="act act--wa" href="${waLink(p,b)}" target="_blank" rel="noopener" title="Notificar a ${p}">📲 WhatsApp ${(config.phones.length>1)?(i+1):""}</a>`).join("");
+
+  return `<article class="booking booking--${b.status}">
+    <div class="booking__body">
+      <div class="booking__top">
+        <span class="booking__emoji">${machineIcon(b.machine)}</span>
+        <div class="booking__titles">
+          <div class="booking__machine">${esc(b.machine)}</div>
+          ${b.client?`<div class="booking__client">${esc(b.client)}</div>`:""}
+        </div>
+        <span class="badge badge--${b.status}">${ST_LABEL[b.status]}</span>
+      </div>
+      ${conflict?`<div class="conflict">⚠️ Cruce de horario con otra reserva de esta máquina</div>`:""}
+      <div class="meta">
+        <div class="meta__row"><span class="meta__ic">🕒</span><span>${when}</span></div>
+        ${durLabel(b)?`<div class="meta__row"><span class="meta__ic">⏱️</span><span>${esc(durLabel(b))}</span></div>`:""}
+        ${fullPlace(b)?`<div class="meta__row"><span class="meta__ic">📍</span><span>${esc(fullPlace(b))}</span></div>`:""}
+        ${b.notes?`<div class="meta__row meta__row--notes"><span class="meta__ic">📝</span><span>${esc(b.notes)}</span></div>`:""}
+      </div>
+      <div class="booking__actions">
+        <a class="act act--gcal" href="${gcalLink(b)}" target="_blank" rel="noopener">📅 Google Calendar</a>
+        ${waBtns}
+        <button class="act act--edit" onclick="openForm('${b.id}')">✏️ Editar</button>
+        <button class="act act--del" onclick="del('${b.id}')">🗑️</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* Ubicación completa: dirección · ciudad · departamento */
+function fullPlace(b){
+  return [b.location, b.city, b.depto].filter(Boolean).join(" · ");
+}
+
+/* ---------- Enlaces externos ---------- */
+function pad(n){ return String(n).padStart(2,"0"); }
+function gcalUTC(d){ // a formato YYYYMMDDTHHMMSSZ en UTC
+  return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+"T"+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+"Z";
+}
+function gcalLink(b){
+  const s=new Date(b.start), e=new Date(b.end||b.start);
+  const title=`${b.machine}${b.client?" · "+b.client:""}`;
+  const details=[
+    b.client?`Cliente/Obra: ${b.client}`:"",
+    durLabel(b)?`Tiempo de préstamo: ${durLabel(b)}`:"",
+    `Estado: ${ST_LABEL[b.status]}`,
+    b.notes?`Notas: ${b.notes}`:""
+  ].filter(Boolean).join("\n");
+  const p=new URLSearchParams({
+    action:"TEMPLATE", text:title,
+    dates:`${gcalUTC(s)}/${gcalUTC(e)}`,
+    details, location:fullPlace(b)
+  });
+  return "https://calendar.google.com/calendar/render?"+p.toString();
+}
+function waLink(phone, b){
+  const digits=String(phone).replace(/\D/g,"");
+  const full = digits.startsWith(COUNTRY_CODE) ? digits : COUNTRY_CODE+digits;
+  const s=new Date(b.start), e=new Date(b.end||b.start);
+  const msg =
+`🚧 *AGENDAMIENTO DE MAQUINARIA*
+━━━━━━━━━━━━━━━
+🛠️ Máquina: ${b.machine}
+${b.client?`🏗️ Cliente/Obra: ${b.client}\n`:""}${fullPlace(b)?`📍 Ubicación: ${fullPlace(b)}\n`:""}${durLabel(b)?`⏱️ Tiempo de préstamo: ${durLabel(b)}\n`:""}📅 Inicio: ${fmtFull.format(s)}
+🏁 Fin: ${fmtFull.format(e)}
+📋 Estado: ${ST_LABEL[b.status]}
+${b.notes?`📝 Notas: ${b.notes}\n`:""}━━━━━━━━━━━━━━━`;
+  return `https://wa.me/${full}?text=${encodeURIComponent(msg)}`;
+}
+
+/* ---------- Departamentos de Colombia ---------- */
+const DEPARTAMENTOS=[
+  "Amazonas","Antioquia","Arauca","Archipiélago de San Andrés, Providencia y Santa Catalina",
+  "Atlántico","Bogotá D.C.","Bolívar","Boyacá","Caldas","Caquetá","Casanare","Cauca","Cesar",
+  "Chocó","Córdoba","Cundinamarca","Guainía","Guaviare","Huila","La Guajira","Magdalena","Meta",
+  "Nariño","Norte de Santander","Putumayo","Quindío","Risaralda","Santander","Sucre","Tolima",
+  "Valle del Cauca","Vaupés","Vichada"
+];
+function fillDeptoSelect(){
+  const sel=document.getElementById("bDepto");
+  if(!sel) return;
+  sel.innerHTML='<option value="">Selecciona un departamento</option>'+
+    DEPARTAMENTOS.map(d=>`<option value="${d}">${d}</option>`).join("");
+}
+
+/* ---------- Tiempo de préstamo ---------- */
+const DUR_UNITS={
+  hora  :{h:1,     one:"hora de máquina", many:"horas de máquina"},
+  dia   :{h:24,    one:"día",             many:"días"},
+  semana:{h:24*7,  one:"semana",          many:"semanas"},
+  mes   :{h:24*30, one:"mes",             many:"meses"},
+  anio  :{h:24*365,one:"año",             many:"años"}
+};
+function durLabel(b){
+  const u=DUR_UNITS[b.durUnit]; const q=Number(b.durQty);
+  if(!u||!q) return "";
+  return q+" "+(q===1?u.one:u.many);
+}
+/* Recalcula la fecha de fin a partir del inicio y del tiempo de préstamo */
+function applyDuration(){
+  const start=document.getElementById("bStart").value;
+  const qty=parseFloat(document.getElementById("bDurQty").value);
+  const unit=DUR_UNITS[document.getElementById("bDurUnit").value];
+  if(!start||!qty||qty<=0||!unit) return;
+  const end=new Date(new Date(start).getTime()+qty*unit.h*3600*1000);
+  document.getElementById("bEnd").value=localInputValue(end);
+}
+/* Si se edita el fin a mano, la duración se ajusta en horas de máquina */
+function syncDurationFromDates(){
+  const s=document.getElementById("bStart").value, e=document.getElementById("bEnd").value;
+  if(!s||!e) return;
+  const hours=(new Date(e)-new Date(s))/3600000;
+  if(hours<=0) return;
+  const unitSel=document.getElementById("bDurUnit");
+  const u=DUR_UNITS[unitSel.value];
+  const qty=hours/u.h;
+  if(Number.isInteger(qty) && qty>0){ document.getElementById("bDurQty").value=qty; return; }
+  unitSel.value="hora";
+  document.getElementById("bDurQty").value=Math.round(hours*100)/100;
+}
+
+/* ---------- Selector de máquina con íconos ----------
+   El <select> nativo no admite SVG dentro de <option>, así que
+   queda oculto como fuente de verdad y se dibuja una lista propia. */
+function initMachinePicker(){
+  const sel=document.getElementById("bMachine");
+  sel.classList.add("sr-select"); sel.tabIndex=-1; sel.setAttribute("aria-hidden","true");
+
+  const wrap=document.createElement("div");
+  wrap.className="msel"; wrap.id="bMachinePicker";
+  wrap.innerHTML=
+    '<button type="button" class="msel__btn" id="bMachineBtn" aria-haspopup="listbox" aria-expanded="false"></button>'+
+    '<div class="msel__list" id="bMachineList" role="listbox" aria-label="Máquina"></div>';
+  sel.parentNode.insertBefore(wrap, sel.nextSibling);
+
+  const btn=wrap.querySelector(".msel__btn"), list=wrap.querySelector(".msel__list");
+  list.innerHTML=MACHINES.map(m=>
+    `<div class="msel__opt" role="option" data-v="${esc(m.v)}">${machineIcon(m.v)}<span>${esc(m.v)}</span></div>`
+  ).join("");
+
+  const opts=[...list.querySelectorAll(".msel__opt")];
+  const open =()=>{ wrap.classList.add("open"); btn.setAttribute("aria-expanded","true");
+                    const a=list.querySelector('[aria-selected="true"]'); mark(a?opts.indexOf(a):0); };
+  const close=()=>{ wrap.classList.remove("open"); btn.setAttribute("aria-expanded","false"); };
+  let idx=0;
+  function mark(i){
+    idx=Math.max(0,Math.min(opts.length-1,i));
+    opts.forEach((o,n)=>o.classList.toggle("active",n===idx));
+    opts[idx].scrollIntoView({block:"nearest"});
+  }
+  function pick(v){
+    sel.value=v;
+    sel.dispatchEvent(new Event("change"));
+    syncMachinePicker();
+    close(); btn.focus();
+  }
+
+  btn.addEventListener("click",()=>wrap.classList.contains("open")?close():open());
+  opts.forEach(o=>o.addEventListener("click",()=>pick(o.dataset.v)));
+  btn.addEventListener("keydown",e=>{
+    const isOpen=wrap.classList.contains("open");
+    if(["ArrowDown","ArrowUp","Enter"," "].includes(e.key)){
+      e.preventDefault();
+      if(!isOpen) return open();
+      if(e.key==="ArrowDown") mark(idx+1);
+      else if(e.key==="ArrowUp") mark(idx-1);
+      else pick(opts[idx].dataset.v);
+    } else if(e.key==="Escape" && isOpen){ e.stopPropagation(); close(); }
+  });
+  document.addEventListener("click",e=>{ if(!wrap.contains(e.target)) close(); });
+}
+/* Refleja en el botón el valor actual del <select> */
+function syncMachinePicker(){
+  const sel=document.getElementById("bMachine");
+  const btn=document.getElementById("bMachineBtn");
+  if(!btn) return;
+  const v=sel.value;
+  btn.innerHTML=`${machineIcon(v)}<span>${esc(v)}</span>`;
+  document.querySelectorAll("#bMachineList .msel__opt").forEach(o=>
+    o.setAttribute("aria-selected", String(o.dataset.v===v)));
+}
+
+/* ---------- Form ---------- */
+function fillMachineSelect(sel, includeAll){
+  sel.innerHTML = (includeAll?`<option value="">Todas</option>`:"") +
+    MACHINES.map(m=>`<option value="${m.v}">${m.e}  ${m.v}</option>`).join("");
+}
+function localInputValue(date){ // Date → "YYYY-MM-DDTHH:MM" en hora local
+  const d=new Date(date.getTime()-date.getTimezoneOffset()*60000);
+  return d.toISOString().slice(0,16);
+}
+function openForm(id, dateKey){
+  const ov=document.getElementById("formOverlay");
+  const b = id ? bookings.find(x=>x.id===id) : null;
+  document.getElementById("formTitle").textContent = b?"Editar agendamiento":"Nuevo agendamiento";
+  document.getElementById("bId").value = b?b.id:"";
+  const knownMachine = b ? (MACHINES.some(m=>m.v===b.machine)?b.machine:"Otra") : "Excavadora";
+  document.getElementById("bMachine").value = knownMachine;
+  syncMachinePicker();
+  toggleCustom();
+  document.getElementById("bMachineCustom").value = (b && knownMachine==="Otra")?b.machine:"";
+  document.getElementById("bClient").value   = b?b.client||"":"";
+  document.getElementById("bDepto").value    = b?b.depto||"":"";
+  document.getElementById("bCity").value     = b?b.city||"":"";
+  document.getElementById("bLocation").value = b?b.location||"":"";
+  document.getElementById("bDurQty").value   = b?(b.durQty||8):8;
+  document.getElementById("bDurUnit").value  = b?(b.durUnit||"hora"):"hora";
+  document.getElementById("bStatus").value   = b?b.status:"pendiente";
+  document.getElementById("bNotes").value    = b?b.notes||"":"";
+
+  let s, e;
+  if(b){ s=new Date(b.start); e=new Date(b.end); }
+  else {
+    const base = dateKey ? new Date(dateKey+"T08:00:00") : new Date();
+    if(!dateKey){ base.setMinutes(0,0,0); base.setHours(base.getHours()+1); }
+    s=base; e=new Date(base.getTime()+8*3600*1000); // jornada por defecto 8h
+  }
+  document.getElementById("bStart").value = localInputValue(s);
+  document.getElementById("bEnd").value   = localInputValue(e);
+  if(!b || !b.durQty) syncDurationFromDates();
+  document.getElementById("formErr").classList.remove("show");
+
+  ov.classList.add("open");
+  setTimeout(()=>{ const b=document.getElementById("bMachineBtn"); (b||document.getElementById("bMachine")).focus(); },50);
+}
+function toggleCustom(){
+  const isOther = document.getElementById("bMachine").value==="Otra";
+  document.getElementById("customMachineWrap").style.display = isOther?"flex":"none";
+}
+function saveBooking(){
+  const id=document.getElementById("bId").value;
+  let machine=document.getElementById("bMachine").value;
+  if(machine==="Otra"){ machine=document.getElementById("bMachineCustom").value.trim(); }
+  const start=document.getElementById("bStart").value;
+  const end=document.getElementById("bEnd").value;
+  const durQty=parseFloat(document.getElementById("bDurQty").value)||null;
+  const durUnit=document.getElementById("bDurUnit").value;
+  const err=document.getElementById("formErr");
+
+  if(!machine){ return showErr("Indica el nombre de la máquina."); }
+  if(!start||!end){ return showErr("Define la fecha de inicio y de fin."); }
+  if(new Date(end)<=new Date(start)){ return showErr("La fecha de fin debe ser posterior al inicio."); }
+  if(durQty!==null && durQty<=0){ return showErr("El tiempo de préstamo debe ser mayor que cero."); }
+
+  const data={
+    id: id||uid(),
+    machine,
+    client:document.getElementById("bClient").value.trim(),
+    depto:document.getElementById("bDepto").value,
+    city:document.getElementById("bCity").value.trim(),
+    location:document.getElementById("bLocation").value.trim(),
+    durQty, durUnit,
+    start:new Date(start).toISOString(),
+    end:new Date(end).toISOString(),
+    status:document.getElementById("bStatus").value,
+    notes:document.getElementById("bNotes").value.trim()
+  };
+  if(id){ const i=bookings.findIndex(x=>x.id===id); bookings[i]=data; }
+  else { bookings.push(data); }
+  save(STORE_BOOKINGS, bookings);
+  selected = dayKeysOf(data)[0];
+  viewDate = startOfMonth(new Date(data.start));
+  closeForm(); renderAll();
+  toast(id?"Agendamiento actualizado":"Agendamiento guardado");
+
+  function showErr(m){ err.textContent=m; err.classList.add("show"); return false; }
+}
+function del(id){
+  const b=bookings.find(x=>x.id===id); if(!b) return;
+  if(!confirm(`¿Eliminar el agendamiento de "${b.machine}"? Esta acción no se puede deshacer.`)) return;
+  bookings=bookings.filter(x=>x.id!==id); save(STORE_BOOKINGS, bookings);
+  renderAll(); toast("Agendamiento eliminado");
+}
+function closeForm(){ document.getElementById("formOverlay").classList.remove("open"); }
+
+/* ---------- Config (teléfonos) ---------- */
+function openCfg(){
+  renderPhones(); document.getElementById("cfgOverlay").classList.add("open");
+}
+function renderPhones(){
+  const list=document.getElementById("phonesList");
+  list.innerHTML=(config.phones||[]).map((p,i)=>`
+    <div class="phone-row">
+      <span class="prefix">+57</span>
+      <input type="tel" value="${esc(p)}" data-i="${i}" placeholder="3001234567" inputmode="numeric">
+      <button onclick="removePhone(${i})" title="Quitar" aria-label="Quitar número">✕</button>
+    </div>`).join("");
+}
+function removePhone(i){ config.phones.splice(i,1); renderPhones(); }
+function saveCfg(){
+  const inputs=[...document.querySelectorAll("#phonesList input")];
+  const phones=inputs.map(x=>x.value.replace(/\D/g,"")).filter(Boolean);
+  if(!phones.length){ toast("Agrega al menos un número"); return; }
+  config.phones=phones; save(STORE_CONFIG, config);
+  document.getElementById("cfgOverlay").classList.remove("open");
+  renderAll(); toast("Números actualizados");
+}
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(msg){
+  const t=document.getElementById("toast");
+  document.getElementById("toastMsg").textContent=msg;
+  t.classList.add("show"); clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+/* ---------- Render all ---------- */
+function renderAll(){ renderStats(); renderCalendar(); renderPanel(); }
+
+/* ---------- Init / eventos ---------- */
+function init(){
+  renderWeekdays();
+  fillMachineSelect(document.getElementById("fMachine"), true);
+  fillMachineSelect(document.getElementById("bMachine"), false);
+  initMachinePicker();
+  syncMachinePicker();
+  fillDeptoSelect();
+
+  /* Tiempo de préstamo ↔ fechas */
+  document.getElementById("bDurQty").addEventListener("input", applyDuration);
+  document.getElementById("bDurUnit").addEventListener("change", applyDuration);
+  document.getElementById("bStart").addEventListener("change", applyDuration);
+  document.getElementById("bEnd").addEventListener("change", syncDurationFromDates);
+
+  document.getElementById("prevMonth").onclick=()=>{ viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1); renderCalendar(); };
+  document.getElementById("nextMonth").onclick=()=>{ viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1); renderCalendar(); };
+  document.getElementById("btnToday").onclick=()=>{ const n=new Date(); viewDate=startOfMonth(n); selected=ymd(n); renderAll(); };
+  document.getElementById("btnNew").onclick=()=>openForm(null, selected);
+  document.getElementById("btnNewDay").onclick=()=>openForm(null, selected);
+  document.getElementById("bMachine").onchange=toggleCustom;
+  document.getElementById("btnSave").onclick=saveBooking;
+  document.getElementById("btnSettings").onclick=openCfg;
+  document.getElementById("btnSaveCfg").onclick=saveCfg;
+  document.getElementById("addPhone").onclick=()=>{ config.phones.push(""); renderPhones(); };
+
+  document.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeForm);
+  document.querySelectorAll("[data-close-cfg]").forEach(b=>b.onclick=()=>document.getElementById("cfgOverlay").classList.remove("open"));
+  [document.getElementById("formOverlay"),document.getElementById("cfgOverlay")].forEach(ov=>{
+    ov.addEventListener("click",e=>{ if(e.target===ov) ov.classList.remove("open"); });
+  });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeForm(); document.getElementById("cfgOverlay").classList.remove("open"); } });
+
+  document.getElementById("fMachine").onchange=e=>{ filters.machine=e.target.value; renderAll(); };
+  document.getElementById("fStatus").onchange =e=>{ filters.status=e.target.value; renderAll(); };
+  document.getElementById("fSearch").oninput  =e=>{ filters.q=e.target.value; renderAll(); };
+
+  // Datos de ejemplo la primera vez
+  // Eliminado para que la agenda inicie vacía, como se solicitó.
+  renderAll();
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
