@@ -573,7 +573,7 @@ p{margin:0}
       <a href="#equipos">Maquinaria</a>
       <a href="#proyectos">Proyectos</a>
       <a href="#contacto">Contacto</a>
-      <a href="cotizador.html" class="nav-cta">Cotización</a>
+      <a href="cotizador/cotizador.html" class="nav-cta">Cotización</a>
     </div>
     <button class="burger load-down" id="burger" aria-label="Abrir menú" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -1575,7 +1575,8 @@ p{margin:0}
       <article class="proj reveal" data-d="2"><div class="pn">Marval</div><h4>Villa de los Angeles</h4><span>Pilotaje y retiro de material</span></article>
       <article class="proj reveal" data-d="2"><div class="pn">Consorcio Vial Soacha </div><h4>Transmilenio Troncal Soacha</h4><span>Pilotaje de obra</span></article>
     </div>
-    <p class="proj-more reveal">Y muchos más:</p>
+    <br>
+    <p class="proj-more reveal" style="font-weight: bold; text-decoration: underline;">Y muchos más:</p>
   </div>
 </section>
 
@@ -1586,7 +1587,7 @@ p{margin:0}
       <h2>¿Listo para tu próximo proyecto?</h2>
       <p>Cuéntanos qué necesitas y recibe una cotización personalizada.</p>
     </div>
-    <a href="#contacto" class="btn btn-gold reveal" data-d="1">Solicitar cotización
+    <a href="cotizador/cotizador.html" class="btn btn-gold reveal" data-d="1">Solicitar cotización
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
   </div>
 </section>
@@ -1596,8 +1597,10 @@ p{margin:0}
   <div class="wrap contact-grid">
     <div class="contact-info">
       <span class="kicker kicker--ink reveal">Contáctenos</span>
-      <h2 class="s-title reveal" data-d="1">Hablemos de tu próximo proyecto</h2>
-      <p class="s-desc reveal" data-d="2">Atendemos requerimientos de pilotaje, excavación, transporte y alquiler de maquinaria pesada en todo el país.</p>
+      <h2 class="s-title reveal" data-d="1" style="color: #071934;">Hablemos de tu próximo proyecto</h2>
+
+      <p class="s-desc reveal" data-d="2" style="color:#071934;">Atendemos requerimientos de pilotaje, excavación, transporte y alquiler de maquinaria pesada en todo el país.</p>
+
       <div class="cdetail reveal" data-d="2">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
         <div><h4>Oficina principal</h4><p>Calle 161a # 8-58, Oficina 402 · Bogotá D.C., Colombia</p></div>
@@ -1612,26 +1615,128 @@ p{margin:0}
       </div>
     </div>
     <div class="form-card reveal" data-d="1">
-      <h3>Solicitar información</h3>
-      <form id="contactForm" novalidate>
+      <h3>Dejanos tus inquietudes</h3>
+      <form id="contactForm" novalidate autocomplete="off">
         <div class="frow">
-          <div class="fg"><label for="nombre">Nombre</label><input id="nombre" name="nombre" type="text" placeholder="Tu nombre completo" required></div>
-          <div class="fg"><label for="empresa">Empresa</label><input id="empresa" name="empresa" type="text" placeholder="Nombre de tu empresa"></div>
+          <div class="fg">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s\-']{2,50}$" maxlength="50" placeholder="Tu nombre completo" required>
+          </div>
+          <div class="fg">
+            <label for="empresa">Empresa</label>
+            <input id="empresa" name="empresa" type="text" pattern="^[\w\sÁÉÍÓÚáéíóúÑñ\.\-']{2,50}$" maxlength="50" placeholder="Nombre de tu empresa">
+          </div>
         </div>
         <div class="frow">
-          <div class="fg"><label for="email">Correo</label><input id="email" name="email" type="email" placeholder="correo@empresa.com" required></div>
-          <div class="fg"><label for="telefono">Teléfono</label><input id="telefono" name="telefono" type="tel" placeholder="+57 300 000 0000" required></div>
+          <div class="fg">
+            <label for="email">Correo</label>
+            <input id="email" name="email" type="email" maxlength="60" placeholder="correo@empresa.com" required>
+          </div>
+          <div class="fg">
+            <label for="telefono">Teléfono</label>
+            <input id="telefono" name="telefono" type="tel" pattern="^(\+?\d{7,15})$" maxlength="17" placeholder="+57 300 000 0000" required>
+          </div>
         </div>
-        <div class="fg"><label for="servicio">Servicio requerido</label><input id="servicio" name="servicio" type="text" placeholder="Pilotaje, excavación, transporte…"></div>
-        <div class="fg"><label for="mensaje">Mensaje</label><textarea id="mensaje" name="mensaje" placeholder="Describe tu proyecto y requerimientos…" required></textarea></div>
-        <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center">Enviar solicitud
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        <div class="fg">
+          <label for="servicio">PQRS</label>
+          <input id="servicio" name="servicio" type="text" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\,\.\s\-]{2,100}$" maxlength="100" placeholder="Pilotaje, excavación, transporte…">
+        </div>
+        <div class="fg">
+          <label for="mensaje">Mensaje</label>
+          <textarea id="mensaje" name="mensaje" maxlength="500" placeholder="Describe tu proyecto y requerimientos…" required></textarea>
+        </div>
+        <button type="button" id="customSubmit" class="btn btn-gold" style="width:100%;justify-content:center">Enviar solicitud
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
         <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
       </form>
     </div>
   </div>
 </section>
 </main>
+<script>
+// Protección de input, validación y prevención de JS injection
+document.getElementById('customSubmit').addEventListener('click', function () {
+  var form = document.getElementById('contactForm');
+  var feedback = document.getElementById('feedback');
+  feedback.textContent = '';
+  
+  // Helper para escapar HTML
+  function escapeHTML(str) {
+    return (str || '').replace(/[<>&"'`]/g, function (c) {
+      return ({
+        '<': '&lt;',
+        '>': '&gt;',
+        '&': '&amp;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '`': '&#96;'
+      })[c];
+    });
+  }
+
+  // Validación de campos
+  var nombre = form.nombre.value.trim();
+  var empresa = form.empresa.value.trim();
+  var email = form.email.value.trim();
+  var telefono = form.telefono.value.trim();
+  var servicio = form.servicio.value.trim();
+  var mensaje = form.mensaje.value.trim();
+
+  var nombreValido = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s\-']{2,50}$/.test(nombre);
+  var empresaValido = empresa === "" || /^[\w\sÁÉÍÓÚáéíóúÑñ\.\-']{2,50}$/.test(empresa);
+  var emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  var telefonoValido = /^(\+?\d{7,15})$/.test(telefono);
+  var servicioValido = servicio === "" || /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\,\.\s\-]{2,100}$/.test(servicio);
+  var mensajeValido = mensaje.length > 0 && mensaje.length <= 500 &&
+    !/[<>&"'`]/.test(mensaje); // Bloquear tags en el mensaje
+
+  if (!nombreValido) {
+    feedback.textContent = "Por favor, ingresa un nombre válido.";
+    return;
+  }
+
+  if (!empresaValido) {
+    feedback.textContent = "El nombre de la empresa contiene caracteres inválidos.";
+    return;
+  }
+
+  if (!emailValido) {
+    feedback.textContent = "Por favor, ingresa un correo electrónico válido.";
+    return;
+  }
+
+  if (!telefonoValido) {
+    feedback.textContent = "Por favor, ingresa un número de teléfono válido.";
+    return;
+  }
+
+  if (!servicioValido) {
+    feedback.textContent = "El campo PQRS contiene caracteres inválidos.";
+    return;
+  }
+
+  if (!mensajeValido) {
+    feedback.textContent = "El mensaje contiene caracteres no permitidos o es demasiado largo.";
+    return;
+  }
+
+  // Escapar los datos antes de enviar o mostrar
+  var datosLimpios = {
+    nombre: escapeHTML(nombre),
+    empresa: escapeHTML(empresa),
+    email: escapeHTML(email),
+    telefono: escapeHTML(telefono),
+    servicio: escapeHTML(servicio),
+    mensaje: escapeHTML(mensaje)
+  };
+
+  // Aquí debería ir la lógica de envío seguro vía backend (ejemplo: fetch/ajax/post)
+  // Por ahora simulamos respuesta exitosa
+  feedback.textContent = "¡Gracias por contactarnos! Pronto te responderemos.";
+  form.reset();
+});
+</script>
 
 <!-- ============ FOOTER ============ -->
 <footer class="footer">
