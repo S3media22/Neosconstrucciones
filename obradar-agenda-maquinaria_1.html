@@ -41,7 +41,7 @@
   .app{max-width:1240px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column}
 
   /* ---- Topbar ---- */
-  .topbar{background:#052a61; color:#fff; position:relative}  /* Cambiado a #052a61 */
+  .topbar{background:#052a61; color:#fff; position:relative}
   .topbar::after{content:""; display:block; height:6px; background:var(--hazard); opacity:.9}
   .topbar__inner{
     display:flex; align-items:center; gap:18px; flex-wrap:wrap;
@@ -110,7 +110,7 @@
   .filters{display:flex; gap:10px; flex-wrap:wrap; margin-left:auto}
   .field{display:flex; flex-direction:column; gap:4px}
   .field > label{font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
-  select,input[type=text],input[type=datetime-local],input[type=tel],textarea{
+  select,input[type=text],input[type=datetime-local],input[type=tel],input[type=email],input[type=number],textarea{
     font-family:var(--body); font-size:15px; color:var(--text);
     background:var(--surface); border:1px solid var(--line); border-radius:10px;
     padding:10px 12px; width:100%;
@@ -363,7 +363,6 @@
       <div class="brand">
         <div class="brand__mark">🏗️</div>
         <div>
-          <!-- Envuelve el nombre en un enlace a index.html -->
           <div class="brand__name"><a href="index.html" style="text-decoration:none;color:inherit;">Neosconstruccions S.A.S</a></div>
           <div class="brand__sub">Agenda de maquinaria</div>
         </div>
@@ -466,7 +465,7 @@
         </div>
         <div class="field">
           <label for="bClientEmail">Correo electrónico cliente</label>
-          <input type="email" id="bClientEmail" placeholder="Correo electrónico del cliente">
+          <input type="email" id="bClientEmail" placeholder="correo@ejemplo.com">
         </div>
       </div>
       <div class="field">
@@ -493,7 +492,7 @@
       <div class="grid-2">
         <div class="field">
           <label for="bDurQty">Cantidad</label>
-          <input type="number" id="bDurQty" min="1" step="1" value="8" inputmode="numeric">
+          <input type="number" id="bDurQty" min="1" step="1" value="8" inputmode="numeric" style="padding:10px 12px; height:43px;">
         </div>
         <div class="field">
           <label for="bDurUnit">Unidad</label>
@@ -518,16 +517,6 @@
         </div>
       </div>
       <div class="field">
-        <label for="bStatus">Estado</label>
-        <select id="bStatus">
-          <option value="pendiente">Pendiente</option>
-          <option value="confirmada">Confirmada</option>
-          <option value="en_curso">En curso</option>
-          <option value="completada">Completada</option>
-          <option value="cancelada">Cancelada</option>
-        </select>
-      </div>
-      <div class="field">
         <label for="bNotes">Notas</label>
         <textarea id="bNotes" rows="2" placeholder="Combustible, accesorios, requisitos especiales…"></textarea>
       </div>
@@ -547,14 +536,31 @@
       <h2 class="modal__title" id="cfgTitle">Números de WhatsApp</h2>
       <button class="modal__close" data-close-cfg aria-label="Cerrar">✕</button>
     </div>
-    <div class="modal__body">
-      <p class="hint">Estos números reciben la notificación del agendamiento. Se abren con el mensaje ya redactado; tú confirmas el envío con un toque. Usa el formato local sin <code>+57</code>.</p>
-      <div class="phones" id="phonesList"></div>
-      <button class="btn btn--ghost btn--block" id="addPhone">＋ Agregar número</button>
+    <div class="modal__body" id="cfgBody">
+      <!-- Sección de autenticación por OTP -->
+      <div id="authSection">
+        <p class="hint">Para modificar los números de WhatsApp es necesario validar tu identidad como administrador. Se enviará una clave de acceso al número <strong>317 4395112</strong>[cite: 1].</p>
+        <button class="btn btn--primary btn--block" id="btnSendOtp" style="margin-top:10px;">Enviar solicitud de acceso por WhatsApp</button>
+        <div id="otpInputWrap" style="display:none; margin-top:14px;" class="field">
+          <label for="otpCode">Ingresa la clave de acceso recibida</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="otpCode" placeholder="Ej. ****" inputmode="numeric">
+            <button class="btn btn--primary" id="btnVerifyOtp">Verificar</button>
+          </div>
+        </div>
+        <div class="err" id="otpErr" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Contenido protegido (se muestra tras la autenticación) -->
+      <div id="protectedContent" style="display:none;">
+        <p class="hint">Estos números reciben la notificación del agendamiento. Se abren con el mensaje ya redactado; tú confirmas el envío con un toque. Usa el formato local sin <code>+57</code>.</p>
+        <div class="phones" id="phonesList"></div>
+        <button class="btn btn--ghost btn--block" id="addPhone" style="margin-top:10px;">＋ Agregar número</button>
+      </div>
     </div>
     <div class="modal__foot">
       <button class="btn btn--ghost" data-close-cfg>Cancelar</button>
-      <button class="btn btn--primary" id="btnSaveCfg">Guardar</button>
+      <button class="btn btn--primary" id="btnSaveCfg" style="display:none;">Guardar</button>
     </div>
   </div>
 </div>
@@ -586,9 +592,6 @@ const MACHINES = [
   {v:"Otra",                  k:"otra",            e:"🛠️"}
 ];
 
-/* ---------- Íconos SVG de maquinaria (amarillo obra) ----------
-   Cada máquina tiene su propio dibujo: el emoji solo se usa dentro
-   del <select>, donde el navegador no admite SVG.                */
 const MACHINE_ICONS = {
   excavadora:`<rect x="2" y="34" width="26" height="8" rx="4" class="mi-dk"/><circle cx="8" cy="38" r="2" class="mi-lt"/><circle cx="15" cy="38" r="2" class="mi-lt"/><circle cx="22" cy="38" r="2" class="mi-lt"/><path d="M6 33V24h14v9z" class="mi-yl"/><path d="M9 27h7v4H9z" class="mi-sk"/><path d="M20 27 36 14" class="mi-st"/><path d="m36 14 6 9" class="mi-st"/><path d="M42 23c0 4-4 6-8 5l1-7z" class="mi-yl mi-out"/>`,
   retro:`<rect x="6" y="30" width="30" height="6" rx="3" class="mi-yl"/><circle cx="13" cy="38" r="5" class="mi-dk"/><circle cx="31" cy="38" r="6.5" class="mi-dk"/><circle cx="13" cy="38" r="1.8" class="mi-lt"/><circle cx="31" cy="38" r="2.2" class="mi-lt"/><path d="M17 30v-8h10v8z" class="mi-yl"/><path d="M19 24h6v4h-6z" class="mi-sk"/><path d="M8 30 2 26v-6" class="mi-st"/><path d="M2 20h7v5H2z" class="mi-yl mi-out"/><path d="M36 28l7-8" class="mi-st"/><path d="M43 20c3 2 3 6 0 7l-4-4z" class="mi-yl mi-out"/>`,
@@ -616,6 +619,7 @@ let config   = load(STORE_CONFIG, {phones:["3114903895","3174395112"]});
 let viewDate = startOfMonth(new Date());
 let selected = ymd(new Date());
 let filters  = {machine:"", status:"", q:""};
+let generatedOtp = null;
 
 /* ---------- Helpers ---------- */
 function load(k,f){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } }
@@ -623,15 +627,13 @@ function save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
 function ymd(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), da=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${da}`; }
-function parseLocal(s){ return s ? new Date(s) : null; }              // "YYYY-MM-DDTHH:MM" → Date local
-function machineEmoji(name){ const m = MACHINES.find(x=>x.v===name); return m?m.e:"🛠️"; }
 function machineIcon(name, cls){
   const m = MACHINES.find(x=>x.v===name);
   const paths = MACHINE_ICONS[m?m.k:"otra"] || MACHINE_ICONS.otra;
   return `<svg class="mi ${cls||""}" viewBox="0 0 48 48" role="img" aria-label="${esc(name)}">${paths}</svg>`;
 }
 function esc(s){ return (s||"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-function dayKeysOf(b){ // todas las fechas YYYY-MM-DD que cubre la reserva
+function dayKeysOf(b){
   const out=[]; const s=new Date(b.start); const e=new Date(b.end||b.start);
   let cur=new Date(s.getFullYear(),s.getMonth(),s.getDate());
   const end=new Date(e.getFullYear(),e.getMonth(),e.getDate());
@@ -648,7 +650,7 @@ function matchesFilter(b){
   }
   return true;
 }
-function overlaps(b){ // detecta choque de la MISMA máquina en horario solapado
+function overlaps(b){
   return bookings.some(o=> o.id!==b.id && o.machine===b.machine
     && o.status!=="cancelada" && b.status!=="cancelada"
     && new Date(o.start) < new Date(b.end) && new Date(b.start) < new Date(o.end));
@@ -676,11 +678,10 @@ function renderCalendar(){
   document.getElementById("monthLabel").textContent = fmtMonth.format(viewDate);
   const grid=document.getElementById("calGrid"); grid.innerHTML="";
   const first=startOfMonth(viewDate);
-  const lead=(first.getDay()+6)%7;                  // lunes=0
+  const lead=(first.getDay()+6)%7;
   const start=new Date(first); start.setDate(1-lead);
   const todayKey=ymd(new Date());
 
-  // índice de reservas por día (respeta filtros)
   const byDay={};
   bookings.filter(matchesFilter).forEach(b=>dayKeysOf(b).forEach(k=>{ (byDay[k]=byDay[k]||[]).push(b); }));
 
@@ -760,14 +761,13 @@ function renderBooking(b){
   </article>`;
 }
 
-/* Ubicación completa: dirección · ciudad · departamento */
 function fullPlace(b){
   return [b.location, b.city, b.depto].filter(Boolean).join(" · ");
 }
 
 /* ---------- Enlaces externos ---------- */
 function pad(n){ return String(n).padStart(2,"0"); }
-function gcalUTC(d){ // a formato YYYYMMDDTHHMMSSZ en UTC
+function gcalUTC(d){
   return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+"T"+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+"Z";
 }
 function gcalLink(b){
@@ -776,7 +776,6 @@ function gcalLink(b){
   const details=[
     b.client?`Cliente/Obra: ${b.client}`:"",
     durLabel(b)?`Tiempo de préstamo: ${durLabel(b)}`:"",
-    `Estado: ${ST_LABEL[b.status]}`,
     b.notes?`Notas: ${b.notes}`:""
   ].filter(Boolean).join("\n");
   const p=new URLSearchParams({
@@ -796,7 +795,6 @@ function waLink(phone, b){
 🛠️ Máquina: ${b.machine}
 ${b.client?`🏗️ Cliente/Obra: ${b.client}\n`:""}${fullPlace(b)?`📍 Ubicación: ${fullPlace(b)}\n`:""}${durLabel(b)?`⏱️ Tiempo de préstamo: ${durLabel(b)}\n`:""}📅 Inicio: ${fmtFull.format(s)}
 🏁 Fin: ${fmtFull.format(e)}
-📋 Estado: ${ST_LABEL[b.status]}
 ${b.notes?`📝 Notas: ${b.notes}\n`:""}━━━━━━━━━━━━━━━`;
   return `https://wa.me/${full}?text=${encodeURIComponent(msg)}`;
 }
@@ -829,7 +827,6 @@ function durLabel(b){
   if(!u||!q) return "";
   return q+" "+(q===1?u.one:u.many);
 }
-/* Recalcula la fecha de fin a partir del inicio y del tiempo de préstamo */
 function applyDuration(){
   const start=document.getElementById("bStart").value;
   const qty=parseFloat(document.getElementById("bDurQty").value);
@@ -838,7 +835,6 @@ function applyDuration(){
   const end=new Date(new Date(start).getTime()+qty*unit.h*3600*1000);
   document.getElementById("bEnd").value=localInputValue(end);
 }
-/* Si se edita el fin a mano, la duración se ajusta en horas de máquina */
 function syncDurationFromDates(){
   const s=document.getElementById("bStart").value, e=document.getElementById("bEnd").value;
   if(!s||!e) return;
@@ -852,9 +848,7 @@ function syncDurationFromDates(){
   document.getElementById("bDurQty").value=Math.round(hours*100)/100;
 }
 
-/* ---------- Selector de máquina con íconos ----------
-   El <select> nativo no admite SVG dentro de <option>, así que
-   queda oculto como fuente de verdad y se dibuja una lista propia. */
+/* ---------- Selector de máquina con íconos ---------- */
 function initMachinePicker(){
   const sel=document.getElementById("bMachine");
   sel.classList.add("sr-select"); sel.tabIndex=-1; sel.setAttribute("aria-hidden","true");
@@ -902,7 +896,6 @@ function initMachinePicker(){
   });
   document.addEventListener("click",e=>{ if(!wrap.contains(e.target)) close(); });
 }
-/* Refleja en el botón el valor actual del <select> */
 function syncMachinePicker(){
   const sel=document.getElementById("bMachine");
   const btn=document.getElementById("bMachineBtn");
@@ -918,7 +911,7 @@ function fillMachineSelect(sel, includeAll){
   sel.innerHTML = (includeAll?`<option value="">Todas</option>`:"") +
     MACHINES.map(m=>`<option value="${m.v}">${m.e}  ${m.v}</option>`).join("");
 }
-function localInputValue(date){ // Date → "YYYY-MM-DDTHH:MM" en hora local
+function localInputValue(date){
   const d=new Date(date.getTime()-date.getTimezoneOffset()*60000);
   return d.toISOString().slice(0,16);
 }
@@ -933,12 +926,14 @@ function openForm(id, dateKey){
   toggleCustom();
   document.getElementById("bMachineCustom").value = (b && knownMachine==="Otra")?b.machine:"";
   document.getElementById("bClient").value   = b?b.client||"":"";
+  document.getElementById("bClientPhone").value = b?b.clientPhone||"":"";
+  document.getElementById("bClientEmail").value = b?b.clientEmail||"":"";
+  document.getElementById("bClientAddress").value = b?b.clientAddress||"":"";
   document.getElementById("bDepto").value    = b?b.depto||"":"";
   document.getElementById("bCity").value     = b?b.city||"":"";
   document.getElementById("bLocation").value = b?b.location||"":"";
   document.getElementById("bDurQty").value   = b?(b.durQty||8):8;
   document.getElementById("bDurUnit").value  = b?(b.durUnit||"hora"):"hora";
-  document.getElementById("bStatus").value   = b?b.status:"pendiente";
   document.getElementById("bNotes").value    = b?b.notes||"":"";
 
   let s, e;
@@ -946,7 +941,7 @@ function openForm(id, dateKey){
   else {
     const base = dateKey ? new Date(dateKey+"T08:00:00") : new Date();
     if(!dateKey){ base.setMinutes(0,0,0); base.setHours(base.getHours()+1); }
-    s=base; e=new Date(base.getTime()+8*3600*1000); // jornada por defecto 8h
+    s=base; e=new Date(base.getTime()+8*3600*1000);
   }
   document.getElementById("bStart").value = localInputValue(s);
   document.getElementById("bEnd").value   = localInputValue(e);
@@ -979,13 +974,16 @@ function saveBooking(){
     id: id||uid(),
     machine,
     client:document.getElementById("bClient").value.trim(),
+    clientPhone:document.getElementById("bClientPhone").value.trim(),
+    clientEmail:document.getElementById("bClientEmail").value.trim(),
+    clientAddress:document.getElementById("bClientAddress").value.trim(),
     depto:document.getElementById("bDepto").value,
     city:document.getElementById("bCity").value.trim(),
     location:document.getElementById("bLocation").value.trim(),
     durQty, durUnit,
     start:new Date(start).toISOString(),
     end:new Date(end).toISOString(),
-    status:document.getElementById("bStatus").value,
+    status:"pendiente",
     notes:document.getElementById("bNotes").value.trim()
   };
   if(id){ const i=bookings.findIndex(x=>x.id===id); bookings[i]=data; }
@@ -1006,10 +1004,17 @@ function del(id){
 }
 function closeForm(){ document.getElementById("formOverlay").classList.remove("open"); }
 
-/* ---------- Config (teléfonos) ---------- */
+/* ---------- Config (teléfonos con verificación de Admin OTP) ---------- */
 function openCfg(){
-  renderPhones(); document.getElementById("cfgOverlay").classList.add("open");
+  document.getElementById("authSection").style.display = "block";
+  document.getElementById("protectedContent").style.display = "none";
+  document.getElementById("btnSaveCfg").style.display = "none";
+  document.getElementById("otpInputWrap").style.display = "none";
+  document.getElementById("otpCode").value = "";
+  document.getElementById("otpErr").classList.remove("show");
+  document.getElementById("cfgOverlay").classList.add("open");
 }
+
 function renderPhones(){
   const list=document.getElementById("phonesList");
   list.innerHTML=(config.phones||[]).map((p,i)=>`
@@ -1038,7 +1043,6 @@ function toast(msg){
   toastT=setTimeout(()=>t.classList.remove("show"),2600);
 }
 
-/* ---------- Render all ---------- */
 function renderAll(){ renderStats(); renderCalendar(); renderPanel(); }
 
 /* ---------- Init / eventos ---------- */
@@ -1050,7 +1054,6 @@ function init(){
   syncMachinePicker();
   fillDeptoSelect();
 
-  /* Tiempo de préstamo ↔ fechas */
   document.getElementById("bDurQty").addEventListener("input", applyDuration);
   document.getElementById("bDurUnit").addEventListener("change", applyDuration);
   document.getElementById("bStart").addEventListener("change", applyDuration);
@@ -1067,6 +1070,40 @@ function init(){
   document.getElementById("btnSaveCfg").onclick=saveCfg;
   document.getElementById("addPhone").onclick=()=>{ config.phones.push(""); renderPhones(); };
 
+  /* Lógica de Autenticación OTP para Ajustes */
+  document.getElementById("btnSendOtp").onclick = () => {
+    generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    const adminPhone = "3174395112";
+    
+    // MODIFICACIÓN: El mensaje predeterminado de WhatsApp ya no incluye la clave visible.
+    const msg = `🔑 *SOLICITUD DE ACCESO ADMIN*\nSe ha solicitado configurar los números de WhatsApp en Neosconstruccions. Por favor autoriza el acceso ingresando el código correspondiente en la plataforma.`;
+    
+    const waUrl = `https://wa.me/57${adminPhone}?text=${encodeURIComponent(msg)}`;
+    
+    window.open(waUrl, "_blank");
+    document.getElementById("otpInputWrap").style.display = "block";
+    document.getElementById("otpErr").classList.remove("show");
+    
+    // Mostramos la clave generada de forma segura en la consola del navegador para que puedas validar en pruebas sin que aparezca en pantalla.
+    console.log("CLAVE OTP GENERADA (Oculta por seguridad):", generatedOtp);
+    toast("Solicitud enviada. Ingresa tu clave de acceso.");
+  };
+
+  document.getElementById("btnVerifyOtp").onclick = () => {
+    const val = document.getElementById("otpCode").value.trim();
+    const errDiv = document.getElementById("otpErr");
+    if(val === generatedOtp){
+      document.getElementById("authSection").style.display = "none";
+      document.getElementById("protectedContent").style.display = "block";
+      document.getElementById("btnSaveCfg").style.display = "inline-flex";
+      renderPhones();
+      toast("Acceso concedido");
+    } else {
+      errDiv.textContent = "Clave incorrecta. Inténtalo de nuevo.";
+      errDiv.classList.add("show");
+    }
+  };
+
   document.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeForm);
   document.querySelectorAll("[data-close-cfg]").forEach(b=>b.onclick=()=>document.getElementById("cfgOverlay").classList.remove("open"));
   [document.getElementById("formOverlay"),document.getElementById("cfgOverlay")].forEach(ov=>{
@@ -1078,8 +1115,6 @@ function init(){
   document.getElementById("fStatus").onchange =e=>{ filters.status=e.target.value; renderAll(); };
   document.getElementById("fSearch").oninput  =e=>{ filters.q=e.target.value; renderAll(); };
 
-  // Datos de ejemplo la primera vez
-  // Eliminado para que la agenda inicie vacía, como se solicitó.
   renderAll();
 }
 document.addEventListener("DOMContentLoaded", init);
