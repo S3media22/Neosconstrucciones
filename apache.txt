@@ -1,0 +1,10 @@
+# Redirección HTTP a HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://neosconstrucciones.com/$1 [R=301,L]
+
+# Cabeceras de Seguridad
+Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+Header set X-Frame-Options "DENY"
+Header set X-Content-Type-Options "nosniff"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
