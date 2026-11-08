@@ -1,0 +1,16 @@
+{
+  "name": "Neos Construcciones S.A.S.",
+  "short_name": "Neos",
+  "description": "Pilotaje, excavación y alquiler de maquinaria pesada en Bogotá.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "es-CO",
+  "background_color": "#041a3d",
+  "theme_color": "#041a3d",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

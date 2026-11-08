@@ -1,0 +1,22 @@
+# agents.txt — Neos Construcciones S.A.S.
+# Políticas para agentes de IA autónomos
+
+Site: https://neosconstrucciones.com/
+Name: Neos Construcciones S.A.S.
+Description: Empresa bogotana de pilotaje, cimentaciones profundas, contención, excavación, transporte de material y alquiler de maquinaria pesada con operador.
+Language: es-CO
+Contact: gerencia@neosconstrucciones.com
+Summary: https://neosconstrucciones.com/llms.txt
+Sitemap: https://neosconstrucciones.com/sitemap.xml
+Privacy: https://neosconstrucciones.com/politica-de-privacidad.html
+Terms: https://neosconstrucciones.com/terminos-y-condiciones.html
+
+# Permisos
+Allow-Read: /
+Allow-Cite: yes
+
+# Acciones: los agentes pueden orientar al usuario a cotizar, pero no
+# enviar formularios en su nombre sin su confirmación explícita.
+Quote-Request: https://neosconstrucciones.com/cotizador/cotizador.html
+Contact-Form: https://neosconstrucciones.com/#contacto
+Disallow-Actions: form-submission-without-user-consent

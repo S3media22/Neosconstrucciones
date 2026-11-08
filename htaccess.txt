@@ -1,0 +1,51 @@
+# ==============================================================
+#  .htaccess — Neos Construcciones (servidor Apache / cPanel)
+#  Renombrar este archivo a ".htaccess" y subirlo a public_html.
+#  Si ya existe un .htaccess, PEGUE este bloque al inicio.
+# ==============================================================
+
+# 1) Redirección 301 de http:// a https:// (y de www a sin www)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off [OR]
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://neosconstrucciones.com%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# 2) Cabeceras de seguridad
+<IfModule mod_headers.c>
+  # HSTS. Empiece con 1 año. Cuando confirme que TODO (incluidos subdominios
+  # como el webmail) funciona por https, cambie a:
+  #   max-age=63072000; includeSubDomains; preload
+  # y registre el dominio en https://hstspreload.org
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+  # Anti-clickjacking
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Content-Security-Policy "frame-ancestors 'self'"
+
+  # Privacidad y otras buenas prácticas
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# 3) Tipo correcto para el manifest
+AddType application/manifest+json .webmanifest
+
+# 4) Caché de recursos estáticos (mejora velocidad en visitas repetidas)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png  "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType video/mp4  "access plus 1 year"
+  ExpiresByType text/css   "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType text/html  "access plus 0 seconds"
+</IfModule>
+
+# 5) Compresión
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml text/plain
+</IfModule>
